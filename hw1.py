@@ -17,7 +17,6 @@ R23 = R12.T * R13
 #R34 given
 R45 = R34.T * R13.T * R15
 R56 = R15.T * R12 * Rs2.T * Rs6
-#R6b given
 
 #rotation matrix Rsb
 Rsb = Rs6 * R6b
@@ -26,7 +25,7 @@ Rsb = Rs6 * R6b
 np.set_printoptions(formatter={'float_kind':'{:.4f}'.format})
 
 R_array = [Rs1, R12, R23, R34, R45, R56] #include space rotation from s to 1?
-#R_array = [R12, R23, R34, R45, R56, R6b]
+#R_array = [R12, R23, R34, R45, R56, R6b] #b is fixed relative to 6, so this isn't a joint angle
 
 for i, R in enumerate(R_array):
     #if i == 5:
@@ -65,6 +64,9 @@ print(J_angle_array, end = '\n\n')
 
 ####
 
-
 print(f"Rotation matrix Rsb:")
 print(Rsb, end = '\n\n')
+
+R_test = Rs1 * R12 * R23 * R34 * R45 * R56 * R6b
+print("Test of calculated Rsb:")
+print(R_test, end = '\n\n')
