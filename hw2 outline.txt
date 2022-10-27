@@ -1,0 +1,65 @@
+
+Environment: use Jupyter notebook. will be easiest to test in
+-> github for version history, of course
+
+
+
+needs for code:
+
+- write Newton-Raphson algorithm for matrix operations
+	(one iteration of cycle)
+	- TBD, will need to review N-R process
+	
+- write formula to calculate twist error of current position
+	from goal position
+	- inputs: M, list_of_thetalists (all angles that have been
+		calculated so far), Jb or Js, target transf. Tsb
+	- calculate current transformation matrix of e.e. Tsa from:
+		- starting config M
+		- joint angles theta_list
+		- Jacobian of robot in S or B frame
+	- find Tab: Tab = (Tsa)^-1 Tsb
+	- find twist by [V]*t = log(Tab)
+		- assume rotating w/ twist for unit time 1sec will
+			give trans. matrix
+	- V = se3ToVec([V])
+			
+- write function to calculate magnitude of angular and linear error
+	- fairly simple, can test it easily
+	- inputs: a twist V
+	- outputs: [eomg_curr, elin_curr]
+	
+- write function to save current joint vectors as a line of a .csv file
+	- also fairly simple
+	- inputs: theta_list
+	- writes a line of CSV file
+	- outputs: nothing; stored in the CSV
+			
+- write function to convert a series of joint angles into positions 
+	in xyz coords of the end effector
+		- inputs: M, Blist/Slist, csv_filepath
+		- opens and iterates through CSV file
+		- uses: FKinBody() or FKinSpace(), inputs M, Blist/Slist, thetalist
+		- calculate a transformation matrix that results from 
+			the joint angles applied
+		- take home configuration of robot and pre- or post-multiply
+			transformation from joint angles
+		- use [R,p] = TransToRp(T) to get the translation of the end
+			effector rel. to. body frame; extract set x,y,z = p
+		- outputs a list of lists, [ [x,y,z], [x,y,z], ...)
+
+- write function to display x, y, z posns over time
+	- inputs: xyz_list, a list of lists of xyz coords
+	- take in the CSV file for this so we don't have to write 
+		code for it that depends on prev. outputs in the Jupyter notebook
+	- look up a python library that can do 3D plots you can rotate
+	- find out how to do line plots
+	- have target_posn be an input; calculate initial_posn from array
+		indexing		
+	- outputs: a figure; display it when ready
+
+
+		
+		
+	
+- apply Newton-Raphson to 
