@@ -5,12 +5,9 @@ Environment: use Jupyter notebook. will be easiest to test in
 
 
 needs for code:
-
-- write Newton-Raphson algorithm for matrix operations
-	(one iteration of cycle)
-	- TBD, will need to review N-R process
 	
-- write formula to calculate twist error of current position
+DONE
+- write formula to find twist corr. to. error of current position
 	from goal position
 	- inputs: M, list_of_thetalists (all angles that have been
 		calculated so far), Jb or Js, target transf. Tsb
@@ -24,17 +21,20 @@ needs for code:
 			give trans. matrix
 	- V = se3ToVec([V])
 			
-- write function to calculate magnitude of angular and linear error
+DONE
+- write function to calculate magnitude of angular and linear error from V
 	- fairly simple, can test it easily
 	- inputs: a twist V
 	- outputs: [eomg_curr, elin_curr]
 	
+DONE
 - write function to save current joint vectors as a line of a .csv file
 	- also fairly simple
 	- inputs: theta_list
 	- writes a line of CSV file
 	- outputs: nothing; stored in the CSV
 			
+DONE
 - write function to convert a series of joint angles into positions 
 	in xyz coords of the end effector
 		- inputs: M, Blist/Slist, csv_filepath
@@ -48,6 +48,7 @@ needs for code:
 			effector rel. to. body frame; extract set x,y,z = p
 		- outputs a list of lists, [ [x,y,z], [x,y,z], ...)
 
+DONE
 - write function to display x, y, z posns over time
 	- inputs: xyz_list, a list of lists of xyz coords
 	- take in the CSV file for this so we don't have to write 
@@ -58,8 +59,21 @@ needs for code:
 		indexing		
 	- outputs: a figure; display it when ready
 
-
-		
-		
+DONE - provided
+- write Newton-Raphson algorithm for matrix operations
+	(one iteration of cycle)
+	- format: delta_theta = J^-1(theta_0) * (xd - FKin_x(theta_0)
+	- if Jacobian is not square or has a singularity, apply 
+		y* = Jt * z, Jt = pseudoinverse of J = pinv(J) in Matlab
+			- can calculate Jt if needed based on book
+			- will either exactly satisfy Jy* = z or give the closest
+				solution that minimizes the norm
+	- process uses IKinBody function from MR library
 	
-- apply Newton-Raphson to 
+- write function to compute inverse kinematics once and print a report
+	- uses IKinBody (Blist, M, T, thetalist0, eomg, ev),
+		find_twist_for_error(M, Jb, Tsb, thetalist),
+		calculate_V_error(V)
+	- after each iteration, calculate current trans. matrix, twist error,
+		and linear/angular errors
+	
