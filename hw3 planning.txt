@@ -1,0 +1,168 @@
+To-Do: ME449 Asst 3
+
+
+Puppet
+
+
+Values to determine:
+
+Matrices:
+- thetalist
+- g-vector
+- dthetalist
+- thetamat (out)
+- dthetamat (out)
+- Mlist - given
+- Slist - given
+
+Scalars:
+- t: total sim time
+- dt: timestep
+
+Spring params:
+- damping
+- stiffness
+- restLength
+
+	
+___
+
+Project Ideation
+
+	Relevant parts of the course text: forward dynamics, 
+	inverse dynamics, Newton-Euler recursive dynamics. 
+	Look for the formulas that use the M config of each
+		joint rel. to. each other
+		
+	- mr.ForwardDynamics
+	- mr.EulerStep
+		
+	This problem is an: inverse dynamics problem, b/c we 
+		know the forces applied at the end effector and
+		are trying to find the joint velocities and accelerations
+		to get there
+
+________
+
+Steps for doing spring forcing:
+- Find current config of end effector
+	- find current theta_list
+	- apply product of exponentials in space frame, because
+		S list given. T = exp([S1]theta1])* ... * M
+	- only really need position p so extract that
+- Define transformation to get from EE to 
+	spring posn, and apply spring force
+	Alt 1:
+		- I don't like this as much because transformation
+			matrices include rotation - we don't want to 
+			induce rotation on the E.E.
+	- let Tsb be end effector posn, Tsp be spring posn
+	- impose that rotation matrix within the spring Tsb
+		must be same as the current R of the end effector
+	- Tbp = Tbs * Tsp
+	- Calculate diff. in p
+	- Forces proportional to displacement. Make a wrench
+		with Fs = [0, 0, 0, k*deltax, k*deltay, k*deltaz]
+		
+	Alt 2:
+	 - extract position p from Tsb and compare to p from springPosn
+	 - difference in p will give a new p-vector
+	 - 	Forces proportional to displacement. Make a wrench
+		with Fs = [0, 0, 0, k*deltax, k*deltay, k*deltaz]
+
+Part 1: Robot in Gravity
+- gravity acting on all the joints of the robot
+- simulate wrenches due to:
+	- applied forces (0)
+	- gravity vector (-g)
+	
+- Lots of it is already written in the code: solves the
+	forward dynamics problem for us, then gives us 
+	thetad and thetadd at next timestep
+- No "required joint forces" for this part of the HW -
+	it's just gravity
+
+-Outline:
+	- Call ForwardDynamics() with starting values of thetad,
+		thetadd, theta
+	- use numerical integration to find theta, thetad at next timestep
+		- I don't really like first-order Euler integration. take
+			the EulerStep code and modify to include accel term
+			in calculating theta
+	- store value of theta at next timestep in an array; theta and
+		thetad in just a regular variable for next calculation
+	- Write the theta_array to a CSV file
+	- import the CSV file into CoppeliaSim
+	- adjust time multiplier so it takes 5s real time to play file.
+		record results for time multiplier.
+
+Part 2: Damping
+- Same general loop structure as last time. Copy and paste it in the
+	Py file, then fill in with modifications
+- Store not just theta and thetad, but also thetadd, for use in
+	next iter. of loop
+		- for validation: could make sure to store arrays of 
+			thetadd and damping force, and make sure force = B * w
+- Calculate damping torques and use in tau_list 
+
+Part 3: Spring Force
+- same general structure as before, but:
+- do not apply damping at first
+- calculate spring force according to method above
+- use it as the end effector wrench 
+
+Define functions to use here
+- Write to csv(): use code from HW2
+- ModEulerStep(): modifies EulerStep to 
+	have second order term
+- Puppet(): 
+	- takes in
+		- damping stiffness restLength
+		- g, Mlist, Glist, Slist (g may be 0 in one sim)
+		- thetalist0, dthetalist0
+	- calculates
+		- end effector wrench Ftip
+		- applied joint torques taulist
+	- calls 
+		- mr.ForwardDynamics(thetalist,dthetalist,taulist,
+			g,Ftip,Mlist,Glist,Slist)
+		- ModEulerStep(thetalist,dthetalist,ddthetalist,dt)
+		- SpringForce()
+		- DampingForce()
+	- returns: a N x n matrix of joint values, N = # of timesteps,
+		n = number of joints
+
+- SpringForce()
+	- Calculates the "spring force" acting on the end effector
+		of the robot, using position of end of spring, position
+		of end effector, and spring parameters.
+	- takes in:
+		-Slist: list of screw axes in space frame 
+		-thetalist: list of current joint angles 
+		-Mlist: home configurations of each joint rel. to.
+			each other
+		-stiffness: scalar with spring constant
+		-springPos: 3-vector position 
+		-restLength: scalar with resting length of spring
+	- calls:
+		- T = FKinBody(M_endeff, Blist, thetalist)
+		- [R,p] = TranstoRp(FKinBody)
+		- x_diff = np.linalg.norm(deltap) - restLength
+	- returns:
+        Ftip, a 6x1 end-effector wrench caused by the spring force
+		
+- DampingForce():
+	- Make a torque at each joint, equal to B * w
+	- takes in:
+		- damping constant B
+		- thetad_list: an nd-array, where n = # of joints of robot
+	- returns:
+		- an nd-array of joint torques, where n = # of joints
+	- let the required forces for robot to apply be tau_list
+		= ****-***** (neg important) * omega_list
+	- note to me: other than the forces the robot is applying, robot will be in
+		free fall
+		
+
+		
+	
