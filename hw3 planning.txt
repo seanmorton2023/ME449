@@ -111,6 +111,18 @@ Part 3: Spring Force
 - calculate spring force according to method above
 - use it as the end effector wrench 
 
+- currently p is defined in the space frame; define displacement
+	of spring in the body frame instead?
+	
+- spring forces: although forces are only linear
+- check on magnitude of spring displacement in end effector
+	frame - distance doesn't seem to be the same
+
+
+
+
+#####
+
 Define functions to use here
 - Write to csv(): use code from HW2
 - ModEulerStep(): modifies EulerStep to 
