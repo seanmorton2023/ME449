@@ -116,8 +116,16 @@ Part 3: Spring Force
 	
 - spring forces: although forces are only linear
 - check on magnitude of spring displacement in end effector
-	frame - distance doesn't seem to be the same
+	frame - distance doesn't seem to be the same - resolved
 
+- try reversing the direction of force - so that robot moves toward the point of interest
+	- figure out why later. other people had this too
+	
+	
+results:
+- 1.5 through 3 are good
+ - 5 is starting to get a little unstable - might be gaining energy
+- 8 gives 2 periodic oscillations, and it passes pretty close to the target point. I like it
 
 
 
