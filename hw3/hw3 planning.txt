@@ -1,6 +1,77 @@
 To-Do: ME449 Asst 3
 
 
+To-Do: For Submission
+
+Formatting
+
+DONE:
+
+TO-DO:
+
+- organize files: 
+	- make "csv" directory and "vid" directory"
+	- remove old filenames
+	- make "code" directory when done
+- put background and helper functions into introduction
+- remove comments and unused code
+- add docstrings for functions where needed
+- put "Part 1", ... markers for each problem
+- put text description under each problem as needed
+- explanation
+	- can be short - my last Jupyter notebook didn't need it
+
+Part 1
+
+DONE:
+
+TO-DO:
+
+- video for dt where energy seems conserved
+- video for dt where system seems to gain energy
+- csv file for conserved energy
+- csv file for increasing energy
+- note dt for each case
+- note time multipliers used for my own convenience
+
+Part 2
+
+DONE:
+
+TO-DO:
+
+- video for positive damping
+- video for negative damping
+- csv file for positive damping
+- csv file for negative damping
+- record values of damping, stiffness, gravity used
+- writeup: Do you see any strange behavior in the simulation if you choose the damping constant to
+	be a large positive value? Can you explain it? How would this behavior be affected if you chose
+	shorter simulation timesteps?
+
+Part 3
+- video for zero gravity, no damping
+- video for zero gravity, positive damping
+- csv file for zero gravity, no damping
+- csv file for zero gravity, positive damping
+- record values of damping, stiffness, gravity used
+- Does the
+motion make sense to you? Should total energy be conserved? Does the total energy appear to be
+conserved? Do you see any strange behavior if you choose the spring constant to be large?
+Now add a positive damping to the simulation that makes the arm nearly come to rest by the
+end of the video. For both videos, record the stiffness and damping you used.
+ -> could put in video files, or put in notebook somewhere (in notebook would be more 
+	modular/easy to edit
+
+
+
+
+
+
+
+
+
+
 Puppet
 
 
@@ -126,7 +197,7 @@ results:
 - 1.5 through 3 are good
  - 5 is starting to get a little unstable - might be gaining energy
 - 8 gives 2 periodic oscillations, and it passes pretty close to the target point. I like it
-
+#used time multiplier of about 3, but at this scale, motions don't appear realistic
 
 
 #####
