@@ -1,0 +1,106 @@
+final project planning
+ME449
+
+
+Milestone 2
+
+
+DONE
+
+
+TO-DO
+
+
+
+
+____
+
+Outline:
+
+
+1. A trajectory to move the gripper from its initial configuration to a "standoff" configuration a few cm above the block.
+2. A trajectory to move the gripper down to the grasp position.
+3. Closing of the gripper.
+4. A trajectory to move the gripper back up to the "standoff" configuration.
+5. A trajectory to move the gripper to a "standoff" configuration above the final configuration.
+6. A trajectory to move the gripper to the final configuration of the object.
+7. Opening of the gripper.
+8. A trajectory to move the gripper back to the "standoff" configuration.
+
+
+Targets:
+- generate standoff position from object initial position
+	- same for final position
+	- inputs: transformation matrix of object location rel. to. world,
+		scalar distance of standoff above part, 
+		direction of displacement of standoff
+	- operations: applies a translation in the right axis of the object frame
+		to produce a transformation matrix for the standoff
+	- uses: mr.RpToTrans(R, p), np.identity()
+	- returns: a transformation matrix corr. to. standoff
+	
+	## potential bug ## do error checking to see if the matrix this outputs 
+		can be used for other MR programs
+	
+- generate standoff-to-object trajectory
+	- inputs: a transformation matrix for standoff, a transformation matrix
+	- already done in CartesianTrajectory
+	
+- close gripper():
+	- could use force control to create a good grip
+	- realistically will just maintain motors at a const. torque
+	
+- open gripper():
+	- set motor torque at gripper to 0
+	
+- convert SE(3) trajectory to joint angles:
+	- iterates through a list of trans. matrices and:
+		- runs inverse kinematics for the given 
+		- stores joint angles in a a list of lists of angles
+	- uses:
+		- [thetalist,success] = IKinBody(Blist,M,T,thetalist0,eomg,ev)
+	- returns the list of joint angles to move through the trajectory
+	
+	- written, debug
+ 
+ ______
+ 
+ Functions for generating trajectories in each segment of code:
+- jointAnglesStartToEnd(Xstart, Xend, Blist, M, thetalist0, eomg, ev):
+	- generates a trajectory using CartesianTrajectory()
+	- converts to a list of joint angles using convertSE3toJointAngles()
+	- returns an array of thetalists
+	
+First iteration uses the joint angles at the starting config of robot.
+Successive iterations use the last joint angles from the previous list
+	of joint angles generated
+
+ 
+ 
+ 
+ 
+- Forward Dynamics:
+	- not needed for simulating joint motion in CoppeliaSim as there are 
+		no forces in directions that any joint but the gripper
+		has to resist motion
+	- would be needed if we were running this IRL though
+
+- write to CSV:
+	- reuse from last HW
+	
+	
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+______
+end milestone 2

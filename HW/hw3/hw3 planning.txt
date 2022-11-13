@@ -21,6 +21,7 @@ To-Do: For Submission
 Formatting
 
 DONE:
+
 - organize files: 
 	- make "csv" directory and "vid" directory"
 	- remove old filenames
@@ -46,10 +47,10 @@ DONE:
 - csv file for increasing 
 - will need to redo sims for problem 1 b/c my springPosn was [0, 1, 2], not [0,0,2]
 - note time multipliers used for my own convenience
+- note dt for each case
 
 
 TO-DO:
-- note dt for each case
 
 Part 2
 
@@ -59,10 +60,10 @@ DONE:
 - csv file for positive damping
 - csv file for negative damping
 - record values of damping, stiffness, gravity used
-
-TO-DO:
 - writeup: Do you see any strange behavior in the simulation if you choose the damping constant to
-	be a large positive value? Can you explain it? How would this behavior be affected if you chose
+	be a large positive value? Can you explain it? 
+TO-DO:
+How would this behavior be affected if you chose
 	shorter simulation timesteps?
 
 Part 3
@@ -73,8 +74,6 @@ DONE:
 - csv file for zero gravity, no damping
 - csv file for zero gravity, positive damping
 - record values of damping, stiffness, gravity used
-
-TO-DO:
 Questions:
 - Does the motion make sense to you? 
 - Should total energy be conserved? 
@@ -86,6 +85,10 @@ Now add a positive damping to the simulation that makes the arm nearly come to r
 end of the video. For both videos, record the stiffness and damping you used.
  -> could put in video files, or put in notebook somewhere (in notebook would be more 
 	modular/easy to edit
+	
+	
+TO-DO:
+
 
 
 

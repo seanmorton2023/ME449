@@ -1,7 +1,9 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\HW",
+    "\\HW\\Project"
   ],
-  "SelectedNode": "\\__init__.py",
+  "SelectedNode": "\\HW\\Project",
   "PreviewInSolutionExplorer": false
 }
