@@ -25,36 +25,54 @@ TO-DO
 	should expect by manually moving joint sliders and looking for the
 	SE3 in CSim, then seeing if plugging it into IKinBody gives
 	the same values
-		
-		
-		
-		
-- make sure the following matrices look good:
-	 -
- cuboid_init_SE3_world     
-goal_frame_SE3_world       
-mobilebase_SE3_init_world  
-arm_base_SE3_init_world    
-tip_position_SE3_world     
+	
+new: 
 
-#geometry that's generalized for all configurations of robot
-M
+testing trajectory creation:
+- write out transformation matrices needed to get from 
+	end effector start posn to end effector final posn, by hand
+- compute transformation matrices in Python
+- create sample trajectories using trans. matrices found
+
+TrajectoryGenerator:
+- define function
+- define number of points needed to make full traj. happen;
+	30s total, updates every 0.01s
+- implement TimeDelay() function to repeat the same joint angle
+	values for N seconds
+- write outline of the 8 motions and how long they'll take
+	- can do this by watching robot movement in the sample vid
+	
+	
+	
+	
+	
+		
+		
+		
+		
+- Matrices I will not need anymore:
+ cuboid_init_SE3_world     
+goal_frame_SE3_world 
+tip_position_SE3_world     
+arm_base_SE3_init_world
+arm_base_SE3_init_mod  
+
+
+
+matrices I still expect to use:
+	 -      
+mobilebase_SE3_init_world  
+mobilebase_SE3_init_world_mod  
+
+Rename these so they conform to the provided naming scheme
+armbase_to_objectinit_SE3
 R_tip_to_obj =
 ee_to_object_SE3 =
 ee_at_obj_init_SE3 = 
 ee_at_obj_end_SE3 =  
-    np.matrix
-
-
-#geometry for altered scene with the robot closer to the block
-arm_base_SE3_init_mod   = mr.RpToTrans(np.identity(3), [0.6722, 0, 9.89E-2])
-armbase_to_objectinit_SE3 = np.asarray( \
-    np.matrix(mr.TransInv(arm_base_SE3_init_mod)) *  np.matrix(cuboid_init_SE3_world ) )
-
-
-
-
-
+    
+	
 
 
 ____
