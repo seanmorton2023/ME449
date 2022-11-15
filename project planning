@@ -6,9 +6,53 @@ Milestone 2
 
 
 DONE
+- find geometry in CoppeliaSim
+- implement testing for:
+	- GenerateStandoffSE3
+	- write_csv_line
+	- write_csv_mat
+	- EE rotation matrix to object SE3
+	
 
 
 TO-DO
+- implement testing for:
+	`- convertSE3toJointAngles
+	 - jointAnglesStartToEnd
+	 - do these by outputting a trajectory to a CSV file and
+		having CoppeliaSim run it
+- get a sense of scale of what transformation matrices we 
+	should expect by manually moving joint sliders and looking for the
+	SE3 in CSim, then seeing if plugging it into IKinBody gives
+	the same values
+		
+		
+		
+		
+- make sure the following matrices look good:
+	 -
+ cuboid_init_SE3_world     
+goal_frame_SE3_world       
+mobilebase_SE3_init_world  
+arm_base_SE3_init_world    
+tip_position_SE3_world     
+
+#geometry that's generalized for all configurations of robot
+M
+R_tip_to_obj =
+ee_to_object_SE3 =
+ee_at_obj_init_SE3 = 
+ee_at_obj_end_SE3 =  
+    np.matrix
+
+
+#geometry for altered scene with the robot closer to the block
+arm_base_SE3_init_mod   = mr.RpToTrans(np.identity(3), [0.6722, 0, 9.89E-2])
+armbase_to_objectinit_SE3 = np.asarray( \
+    np.matrix(mr.TransInv(arm_base_SE3_init_mod)) *  np.matrix(cuboid_init_SE3_world ) )
+
+
+
 
 
 
@@ -76,9 +120,6 @@ Successive iterations use the last joint angles from the previous list
 	of joint angles generated
 
  
- 
- 
- 
 - Forward Dynamics:
 	- not needed for simulating joint motion in CoppeliaSim as there are 
 		no forces in directions that any joint but the gripper
@@ -92,8 +133,27 @@ Successive iterations use the last joint angles from the previous list
 	
 	
 
+Notes
+- rotation matrix of tip is wrong; may not matter bc there is no part
+	that will move the tip frame relative to the end effector frame
+- pad angles with dummy angles if going to use it in scene 6,
+	can otherwise use a different scene that doesn't use the mobile base
 
 
+
+
+Questions
+- Is there an easy way to convert Tait-Bryan angles from CoppeliaSim
+	to rotation matrices? seems important for specifying configuration
+	of tip in space
+- alternatively, can we tell the robot to send the tip to a location
+	in space with arbitrary rotation matrix?
+	
+	A: don't use the frame in between the prongs of the EE, use the frame
+		offset from the tip to plan motion
+		
+		-> will need to have this one rotated from the end position by a certain angle
+			- people usually use either multiples of 45 or 90 degrees
 
 
 

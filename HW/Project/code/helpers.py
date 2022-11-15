@@ -1,6 +1,8 @@
 
 import numpy as np
+#import code.core as mr
 import core as mr
+
 
 #helper functions
 def write_csv_line(csv_filename, data):
@@ -13,6 +15,9 @@ def write_csv_line(csv_filename, data):
 def write_csv_mat(csv_filename, mat):
     f = open(csv_filename, 'w') #clear out old data
     f.close()
+
+    #datatype handling
+    mat = np.matrix(mat).tolist()
     for row in mat:
             write_csv_line(csv_filename, row)
 ###
@@ -41,11 +46,16 @@ def convertSE3toJointAngles(traj, Blist, M, thetalist0, eomg, ev):
     thetalist_array = np.zeros([len(traj), len(thetalist0)])
 
     for i, SE3 in enumerate(traj):
-        [thetalist,success] = mr.IKinBody(Blist,M,T,thetalist0,eomg,ev)
+        [thetalist,success] = mr.IKinBody(Blist,M,SE3,thetalist0,eomg,ev)
         thetalist_array[i, :] = thetalist
         thetalist0 = thetalist
 
-    return thetalist_array
+    #modifications to make to include chassis phi, x, y, and 4 wheels:
+    #- add an extra 3 rows onto the beginning of the array
+    #- add an extra 4 rows onto the end of the array 
+    arr_new = np.zeros([len(traj), 13])
+    arr_new[:, 3:8] = thetalist_array
+    return arr_new
 
 def generateStandoffSE3(Tsb, dist, unit_vec):
     '''
@@ -60,13 +70,13 @@ def generateStandoffSE3(Tsb, dist, unit_vec):
 	- returns: a transformation matrix corr. to. standoff
     '''
 
-    return np.matrix(Tsb) * np.matrix(mr.RptoTrans(
+    return np.matrix(Tsb) * np.matrix(mr.RpToTrans(
                 np.identity(3), dist * np.array(unit_vec))  )  
 
 
 def jointAnglesStartToEnd(Xstart, Xend, tF, n, method, 
                             Blist, M, thetalist0, eomg, ev):
-	'''
+    '''
     - generates a trajectory using CartesianTrajectory()
     - converts to a list of joint angles using convertSE3toJointAngles()
     - returns an array of thetalists
