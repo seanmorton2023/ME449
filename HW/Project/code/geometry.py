@@ -5,22 +5,6 @@ import numpy as np
 from scipy.spatial.transform import Rotation as R
 from helpers import *
 
-Slist = np.array([
-    [0, 0, 1,      0, 0, 0],
-    [0, 1, 0, -0.147, 0, 0],
-    [0, 1, 0, -0.302, 0, 0],
-    [0, 1, 0, -0.437, 0, 0],
-    [0, 0, 1,      0, 0, 0],
-]).T.tolist()
-
-#Blist = np.array([
-#    [0, 0, 1,     0, 0, 0],
-#    [0, 1, 0, 0.548, 0, 0],
-#    [0, 1, 0, 0.353, 0, 0],
-#    [0, 1, 0, 0.218, 0, 0],
-#    [0, 0, 1,      0, 0, 0],    
-#]).T.tolist()
-
 Blist = np.array([
     [0, 0, 1,     0, 0, 0],
     [0, -1, 0, -0.5076, 0, 0],
@@ -30,10 +14,10 @@ Blist = np.array([
 ]).T.tolist()
 
 #parameters given by the problem
-Tsb_0 = mr.RpToTrans(np.identity(3), [0.506, 0, 0.0963])
-Tb0 = mr.RpToTrans(np.identity(3), [0.1662, 0, 0.0026] )
-M0e = mr.RpToTrans(np.identity(3), [0.033, 0, 0.6546] )
-Tsc_i =  mr.RpToTrans(np.identity(3), [1,  0, 0.025])
+Tsb_0  = mr.RpToTrans(np.identity(3), [ 0.406, 0, 0.0963]).tolist()
+Tb0    = mr.RpToTrans(np.identity(3), [0.1662, 0, 0.0026]).tolist()
+M0e    = mr.RpToTrans(np.identity(3), [ 0.033, 0, 0.6546]).tolist()
+Tsc_i =  mr.RpToTrans(np.identity(3), [     1, 0,  0.025]).tolist()
 Tsc_f = np.array([
     [ 0, 1, 0,     0],
     [-1, 0, 0,    -1],
@@ -43,8 +27,8 @@ Tsc_f = np.array([
 
 #standoff matrices in space frame
 dist = 0.02 #2cm
-Tsn_i = generateStandoffSE3(Tsc_i, dist, [0,0,1])
-Tsn_f = generateStandoffSE3(Tsc_f, dist, [0,0,1])
+Tsn_i = generateStandoffSE3(Tsc_i, dist, [0,0,1]).tolist()
+Tsn_f = generateStandoffSE3(Tsc_f, dist, [0,0,1]).tolist()
 
 #orientation of end effector frame rel. to. object frame is 135deg rotation about y
 R_tip_to_obj = R.from_euler('y', 135, degrees = True)
@@ -52,54 +36,28 @@ Tce = mr.RpToTrans(R_tip_to_obj.as_matrix(), [0,0,0]) #orientation relative to o
 Tne = mr.RpToTrans(R_tip_to_obj.as_matrix(), [0,0,0]) #orientation relative to standoff
 
 #positions of the object in the frame of the armbase
-T0s = mr.TransInv(np.dot(Tsb_0, Tb0))
-T0c_i = np.dot(T0s, Tsc_i)
-T0c_f = np.dot(T0s, Tsc_f)
+T0s = mr.TransInv(np.dot(Tsb_0, Tb0)).tolist()
+T0c_i = np.dot(T0s, Tsc_i).tolist()
+T0c_f = np.dot(T0s, Tsc_f).tolist()
 
 #orientations of the end effector at object,
-T0e_i = np.dot(T0c_i, Tce)
-T0e_f = np.dot(T0c_f, Tce)
+T0e_i = np.dot(T0c_i, Tce).tolist()
+T0e_f = np.dot(T0c_f, Tce).tolist()
 
 #...and at standoffs Ni, Nf
-T0n_i = np.dot(T0s, Tsn_i)
-T0e_ni = np.dot(T0n_i, Tne)
-T0n_f = np.dot(T0s, Tsn_f)
-T0e_nf = np.dot(T0n_f, Tne)
-
-
-
-
-
-##geometry for the world that's specific to Scene 6 on;y
-#cuboid_init_SE3_world      = mr.RpToTrans(np.identity(3), [1,  0, 0.025])
-#goal_frame_SE3_world       = mr.RpToTrans(np.identity(3), [0, -1, 0.025])
-#mobilebase_SE3_init_world  = mr.RpToTrans(np.identity(3), [8.8125E-2, 8.8125E-2, 0.18445])
-#arm_base_SE3_init_world    = mr.RpToTrans(np.identity(3), [0.2602, 9.4E-2, .1929])
-#tip_position_SE3_world     =  mr.RpToTrans(np.identity(3), [.19965, 1.0032E-3, .72962])
-
-##geometry that's generalized for all configurations of robot
-#R_tip_to_obj = R.from_euler('y', 135, degrees = True)
-#ee_to_object_SE3 = mr.RpToTrans(R_tip_to_obj.as_matrix(), [0,0,0])
-#ee_at_obj_init_SE3 =  np.asarray( \
-#    np.matrix(cuboid_init_SE3_world) *  np.matrix(mr.TransInv(ee_to_object_SE3 )) )
-#ee_at_obj_end_SE3 =  np.asarray( \
-#    np.matrix(goal_frame_SE3_world) *  np.matrix(mr.TransInv(ee_to_object_SE3 )) )
-
-
-##geometry for altered scene with the robot closer to the block
-##arm_base_SE3_init_mod   = mr.RpToTrans(np.identity(3), [0.6722, 0, 9.89E-2])
-#arm_base_SE3_init_mod   = mr.RpToTrans(np.identity(3), [0, 0, 9.6E-2])
-#ee_init_SE3_world_mod = arm_base_SE3_init_mod.dot(M)
-#armbase_to_objectinit_SE3_mod = np.asarray( \
-#    np.matrix(mr.TransInv(arm_base_SE3_init_mod)) *  np.matrix(cuboid_init_SE3_world ) )
-#armbase_to_ee_at_obj_SE3_mod = np.asarray( \
-#    armbase_to_objectinit_SE3_mod.dot( mr.TransInv(ee_at_obj_init_SE3)  ))
-
-
-
+T0n_i = np.dot(T0s, Tsn_i).tolist()
+T0e_ni = np.dot(T0n_i, Tne).tolist()
+T0n_f = np.dot(T0s, Tsn_f).tolist()
+T0e_nf = np.dot(T0n_f, Tne).tolist()
 
 if __name__ == '__main__':
-    print("World to base SE3:")
-    print(arm_base_SE3_init_mod)
-    print("\nBase to EE SE3:")
-    print(armbase_to_ee_at_obj_SE3_mod) #should have a positive x and negative z
+    print("Make sure these match up with what you see in CoppeliaSim!")
+    print("\nCurrent SE3 (world to end effector):")
+    print(np.dot(Tsb_0, np.dot(Tb0, M0e)))
+    print("\nCurrent SE3 (world to YouBot base):")
+    print(Tsb_0)
+
+    print("\nPosition of the end effector in frame 0:")
+    print(M0e)
+    print("\nPosition of the object in frame 0:")
+    print(T0c_i)

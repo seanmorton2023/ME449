@@ -174,8 +174,13 @@ Questions
 			- people usually use either multiples of 45 or 90 degrees
 
 
-
-
+- The trajectory I've generated is discontinuous - jumps from about 0 to 2pi.
+	Is there a way to avoid this, or is post-processing the values enough?
+- when I use CartesianTrajectory, I get a reasonable curve to get from start
+	to end trajectory, but when I use ScrewTrajectory, my angles computed by
+	IKinBody() diverge to larger and larger values. How do I fix this?
+		-> I want to use ScrewTraj so the robot arm doesn't scrunch up and
+			self-intersect
 
 
 

@@ -22,6 +22,10 @@ def write_csv_mat(csv_filename, mat):
             write_csv_line(csv_filename, row)
 ###
 
+def process_array(arr):
+    '''Rounds the angles in the trajectory array to be bounded between 0 and 2pi.'''
+    return list( map(lambda x: (x % (2*np.pi) ).tolist(), arr)   )
+
 
 def convertSE3toJointAngles(traj, Blist, M, thetalist0, eomg, ev):
     '''
@@ -48,7 +52,7 @@ def convertSE3toJointAngles(traj, Blist, M, thetalist0, eomg, ev):
     for i, SE3 in enumerate(traj):
         [thetalist,success] = mr.IKinBody(Blist,M,SE3,thetalist0,eomg,ev)
         thetalist_array[i, :] = thetalist
-        thetalist0 = thetalist
+        thetalist0 = thetalist[:]
 
     #modifications to make to include chassis phi, x, y, and 4 wheels:
     #- add an extra 3 rows onto the beginning of the array
