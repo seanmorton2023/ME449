@@ -26,6 +26,7 @@ def process_array(arr):
     '''Rounds the angles in the trajectory array to be bounded between 0 and 2pi.'''
     return list( map(lambda x: (x % (2*np.pi) ).tolist(), arr)   )
 
+###
 
 def convertSE3toJointAngles(traj, Blist, M, thetalist0, eomg, ev):
     '''
@@ -61,6 +62,8 @@ def convertSE3toJointAngles(traj, Blist, M, thetalist0, eomg, ev):
     arr_new[:, 3:8] = thetalist_array
     return arr_new
 
+###
+
 def generateStandoffSE3(Tsb, dist, unit_vec):
     '''
     - generate standoff position from object initial position and final position
@@ -77,8 +80,9 @@ def generateStandoffSE3(Tsb, dist, unit_vec):
     return np.matrix(Tsb) * np.matrix(mr.RpToTrans(
                 np.identity(3), dist * np.array(unit_vec))  )  
 
+###
 
-def jointAnglesStartToEnd(Xstart, Xend, tF, n, method, 
+def jointAnglesStartToEnd(Xstart, Xend, Tf, N, method, 
                             Blist, M, thetalist0, eomg, ev):
     '''
     - generates a trajectory using CartesianTrajectory()
@@ -88,3 +92,14 @@ def jointAnglesStartToEnd(Xstart, Xend, tF, n, method,
     traj = mr.CartesianTrajectory(Xstart,Xend,Tf,N,method)
     joint_angles_array = convertSE3toJointAngles(traj, Blist, M, thetalist0, eomg, ev)
     return joint_angles_array
+
+###
+def open_gripper(thetalist0, N):
+    #return a matrix of all the joint angles we started with, only
+    #with a 1 at the end for the gripper state
+    return np.tile(   np.append(thetalist0[:-1],0),   (N,1))
+
+def close_gripper(thetalist0, N):
+    #return a matrix of all the joint angles we started with, only
+    #with a 0 at the end for the gripper state
+    return np.tile(   np.append(thetalist0[:-1],1),   (N,1))

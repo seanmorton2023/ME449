@@ -5,76 +5,26 @@ ME449
 Milestone 2
 
 
-DONE
-- find geometry in CoppeliaSim
-- implement testing for:
-	- GenerateStandoffSE3
-	- write_csv_line
-	- write_csv_mat
-	- EE rotation matrix to object SE3
-	
-
+##########################
 
 TO-DO
-- implement testing for:
-	`- convertSE3toJointAngles
-	 - jointAnglesStartToEnd
-	 - do these by outputting a trajectory to a CSV file and
-		having CoppeliaSim run it
-- get a sense of scale of what transformation matrices we 
-	should expect by manually moving joint sliders and looking for the
-	SE3 in CSim, then seeing if plugging it into IKinBody gives
-	the same values
+
+#########################
 	
 new: 
 
-testing trajectory creation:
-- write out transformation matrices needed to get from 
-	end effector start posn to end effector final posn, by hand
-- compute transformation matrices in Python
-- create sample trajectories using trans. matrices found
-
 TrajectoryGenerator:
 - define function
-- define number of points needed to make full traj. happen;
-	30s total, updates every 0.01s
-- implement TimeDelay() function to repeat the same joint angle
-	values for N seconds
 - write outline of the 8 motions and how long they'll take
 	- can do this by watching robot movement in the sample vid
 	
+- define number of points needed to make full traj. happen;
+	30s total, updates every 0.01s
 	
-	
-	
-	
-		
-		
-		
-		
-- Matrices I will not need anymore:
- cuboid_init_SE3_world     
-goal_frame_SE3_world 
-tip_position_SE3_world     
-arm_base_SE3_init_world
-arm_base_SE3_init_mod  
-
-
-
-matrices I still expect to use:
-	 -      
-mobilebase_SE3_init_world  
-mobilebase_SE3_init_world_mod  
-
-Rename these so they conform to the provided naming scheme
-armbase_to_objectinit_SE3
-R_tip_to_obj =
-ee_to_object_SE3 =
-ee_at_obj_init_SE3 = 
-ee_at_obj_end_SE3 =  
-    
-	
-
-
+- define time each motion will take
+- scale each time by the time per motion of the robot, k, to get number
+	of datapoints for traj generation
+- 
 ____
 
 Outline:
@@ -90,8 +40,66 @@ Outline:
 8. A trajectory to move the gripper back to the "standoff" configuration.
 
 
-Targets:
-- generate standoff position from object initial position
+_________
+
+#############
+
+DONE
+
+############
+
+- find geometry in CoppeliaSim
+- implement testing for:
+	- GenerateStandoffSE3
+	- write_csv_line
+	- write_csv_mat
+	- EE rotation matrix to object SE3
+	
+	
+- convert SE(3) trajectory to joint angles:
+	- iterates through a list of trans. matrices and:
+		- runs inverse kinematics for the given 
+		- stores joint angles in a a list of lists of angles
+	- uses:
+		- [thetalist,success] = IKinBody(Blist,M,T,thetalist0,eomg,ev)
+	- returns the list of joint angles to move through the trajectory
+	
+	- written, debug
+	
+- implement testing for:
+	`- convertSE3toJointAngles
+	 - jointAnglesStartToEnd
+	 - do these by outputting a trajectory to a CSV file and
+		having CoppeliaSim run it
+- get a sense of scale of what transformation matrices we 
+	should expect by manually moving joint sliders and looking for the
+	SE3 in CSim, then seeing if plugging it into IKinBody gives
+	the same values
+	
+	
+testing trajectory creation:
+- write out transformation matrices needed to get from 
+	end effector start posn to end effector final posn, by hand
+- compute transformation matrices in Python
+- create sample trajectories using trans. matrices found
+
+- close gripper():
+	- could use force control to create a good grip
+	- realistically will just maintain motors at a const. torque
+	
+- open gripper():
+	- set motor torque at gripper to 0 
+	
+- Forward Dynamics:
+	- not needed for simulating joint motion in CoppeliaSim as there are 
+		no forces in directions that any joint but the gripper
+		has to resist motion
+	- would be needed if we were running this IRL though
+
+- write to CSV:
+	- reuse from last HW
+
+- create function that can find standoff SE3, in space frame, above object
 	- same for final position
 	- inputs: transformation matrix of object location rel. to. world,
 		scalar distance of standoff above part, 
@@ -103,76 +111,45 @@ Targets:
 	
 	## potential bug ## do error checking to see if the matrix this outputs 
 		can be used for other MR programs
-	
+		
+Targets:
+- generate standoff position from object initial position
 - generate standoff-to-object trajectory
 	- inputs: a transformation matrix for standoff, a transformation matrix
 	- already done in CartesianTrajectory
 	
-- close gripper():
-	- could use force control to create a good grip
-	- realistically will just maintain motors at a const. torque
-	
-- open gripper():
-	- set motor torque at gripper to 0
-	
-- convert SE(3) trajectory to joint angles:
-	- iterates through a list of trans. matrices and:
-		- runs inverse kinematics for the given 
-		- stores joint angles in a a list of lists of angles
-	- uses:
-		- [thetalist,success] = IKinBody(Blist,M,T,thetalist0,eomg,ev)
-	- returns the list of joint angles to move through the trajectory
-	
-	- written, debug
- 
- ______
- 
  Functions for generating trajectories in each segment of code:
 - jointAnglesStartToEnd(Xstart, Xend, Blist, M, thetalist0, eomg, ev):
 	- generates a trajectory using CartesianTrajectory()
 	- converts to a list of joint angles using convertSE3toJointAngles()
 	- returns an array of thetalists
-	
+
 First iteration uses the joint angles at the starting config of robot.
 Successive iterations use the last joint angles from the previous list
 	of joint angles generated
 
- 
-- Forward Dynamics:
-	- not needed for simulating joint motion in CoppeliaSim as there are 
-		no forces in directions that any joint but the gripper
-		has to resist motion
-	- would be needed if we were running this IRL though
-
-- write to CSV:
-	- reuse from last HW
-	
-	
-	
-	
+ ______
+		
+#########################
 
 Notes
+
+#######################
+
 - rotation matrix of tip is wrong; may not matter bc there is no part
 	that will move the tip frame relative to the end effector frame
 - pad angles with dummy angles if going to use it in scene 6,
 	can otherwise use a different scene that doesn't use the mobile base
+-  don't use the frame in between the prongs of the EE, use the frame
+	offset from the tip to plan motion
+	-> will need to have this one rotated from the end position by a certain angle
+		- people usually use either multiples of 45 or 90 degrees
+
 
 
 
 
 Questions
-- Is there an easy way to convert Tait-Bryan angles from CoppeliaSim
-	to rotation matrices? seems important for specifying configuration
-	of tip in space
-- alternatively, can we tell the robot to send the tip to a location
-	in space with arbitrary rotation matrix?
-	
-	A: don't use the frame in between the prongs of the EE, use the frame
-		offset from the tip to plan motion
-		
-		-> will need to have this one rotated from the end position by a certain angle
-			- people usually use either multiples of 45 or 90 degrees
-
 
 - The trajectory I've generated is discontinuous - jumps from about 0 to 2pi.
 	Is there a way to avoid this, or is post-processing the values enough?
