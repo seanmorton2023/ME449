@@ -11,7 +11,7 @@ Blist = np.array([
     [0, -1, 0, -0.3526, 0, 0],
     [0, -1, 0, -0.2176, 0, 0],
     [0, 0, 1,      0, 0, 0],    
-]).T.tolist()
+]).T
 
 #parameters given by the problem
 Tsb_0  = mr.RpToTrans(np.identity(3), [ 0.406, 0, 0.0963]).tolist()

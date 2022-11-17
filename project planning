@@ -10,21 +10,16 @@ Milestone 2
 TO-DO
 
 #########################
-	
-new: 
 
-TrajectoryGenerator:
-- define function
-- write outline of the 8 motions and how long they'll take
-	- can do this by watching robot movement in the sample vid
-	
-- define number of points needed to make full traj. happen;
-	30s total, updates every 0.01s
-	
-- define time each motion will take
-- scale each time by the time per motion of the robot, k, to get number
-	of datapoints for traj generation
-- 
+
+- debug ScrewTraj versus CartesianTrajectory
+- ask why my motion starts out reasonable and then blows up
+	to crazy behavior - IKinBody? - any way to prevent it 
+- go to Office Hours; get advice
+- implement more proper testing of TrajGenerator
+	- for example look at all the start and end SE3s and make
+		sure they're as expected
+- fix GripperState issue
 ____
 
 Outline:
@@ -127,6 +122,22 @@ Targets:
 First iteration uses the joint angles at the starting config of robot.
 Successive iterations use the last joint angles from the previous list
 	of joint angles generated
+
+	
+new: 
+
+TrajectoryGenerator:
+- define function
+- write outline of the 8 motions and how long they'll take
+	- can do this by watching robot movement in the sample vid
+	
+- define number of points needed to make full traj. happen;
+	30s total, updates every 0.01s
+	
+- define time each motion will take
+- scale each time by the time per motion of the robot, k, to get number
+	of datapoints for traj generation
+- add gripperState as an input to TrajGenerator and functions it uses
 
  ______
 		

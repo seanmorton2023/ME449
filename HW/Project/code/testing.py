@@ -86,7 +86,7 @@ if __name__ == '__main__':
     #test_traj_creation()
 
     thetalist1 = [0,1,2,3,4,5,99,99,99]
-    gripper_open = open_gripper(thetalist1,100)
+    gripper_open = gripper_motion(thetalist1,100, 1)
     #print(gripper_open)
-    gripper_closed = close_gripper(thetalist1, 10)
+    gripper_closed = gripper_motion(thetalist1, 10, 0)
     print(gripper_closed)

@@ -28,7 +28,7 @@ def process_array(arr):
 
 ###
 
-def convertSE3toJointAngles(traj, Blist, M, thetalist0, eomg, ev):
+def convertSE3toJointAngles(traj, Blist, M, thetalist0, eomg, ev, gripperState):
     '''
     iterates through a list of trans. matrices and:
 	    - runs inverse kinematics for the given 
@@ -60,6 +60,7 @@ def convertSE3toJointAngles(traj, Blist, M, thetalist0, eomg, ev):
     #- add an extra 4 rows onto the end of the array 
     arr_new = np.zeros([len(traj), 13])
     arr_new[:, 3:8] = thetalist_array
+    arr_new[:,-1] = gripperState
     return arr_new
 
 ###
@@ -83,23 +84,20 @@ def generateStandoffSE3(Tsb, dist, unit_vec):
 ###
 
 def jointAnglesStartToEnd(Xstart, Xend, Tf, N, method, 
-                            Blist, M, thetalist0, eomg, ev):
+                            Blist, M, thetalist0, eomg, ev, gripperState):
     '''
     - generates a trajectory using CartesianTrajectory()
     - converts to a list of joint angles using convertSE3toJointAngles()
     - returns an array of thetalists
     '''
     traj = mr.CartesianTrajectory(Xstart,Xend,Tf,N,method)
-    joint_angles_array = convertSE3toJointAngles(traj, Blist, M, thetalist0, eomg, ev)
+    #traj = mr.ScrewTrajectory(Xstart,Xend,Tf,N,method)
+
+    joint_angles_array = convertSE3toJointAngles(traj, Blist, M, thetalist0, eomg, ev, gripperState)
     return joint_angles_array
 
 ###
-def open_gripper(thetalist0, N):
+def gripper_motion(thetalist, N, state):
     #return a matrix of all the joint angles we started with, only
     #with a 1 at the end for the gripper state
-    return np.tile(   np.append(thetalist0[:-1],0),   (N,1))
-
-def close_gripper(thetalist0, N):
-    #return a matrix of all the joint angles we started with, only
-    #with a 0 at the end for the gripper state
-    return np.tile(   np.append(thetalist0[:-1],1),   (N,1))
+    return np.tile(   np.append(thetalist[:-1],state),   (N,1))
