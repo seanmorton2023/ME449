@@ -1,0 +1,12 @@
+findings from office hours:
+- we should be testing with Scene 8 only
+- target of this homework is not to be generating joint angles to get from
+	start posn to end posn; it's to be generating SE3 matrices from
+	start posn to end posn
+- the 13 values in the CSV file are just the 12 elements of an SE(3)
+	matrix, plus the gripper state
+		- can't believe I got this wrong - I thought the 13 values
+			of interest were the 13 joint angles
+		- should read the instructions more thoroughly and not assume
+- upon doing this the end effector should travel as expected,
+	following a path in the world over a set amount of time

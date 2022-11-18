@@ -11,15 +11,18 @@ TO-DO
 
 #########################
 
-
-- debug ScrewTraj versus CartesianTrajectory
-- ask why my motion starts out reasonable and then blows up
-	to crazy behavior - IKinBody? - any way to prevent it 
-- go to Office Hours; get advice
 - implement more proper testing of TrajGenerator
 	- for example look at all the start and end SE3s and make
 		sure they're as expected
 - fix GripperState issue
+
+
+#new
+
+- check requirements for submission
+- test sample motions with TrajGenerator
+- record video of the motion of the end effector in Scene 8
+- make a function to convert SE3mat to array
 ____
 
 Outline:
@@ -123,9 +126,6 @@ First iteration uses the joint angles at the starting config of robot.
 Successive iterations use the last joint angles from the previous list
 	of joint angles generated
 
-	
-new: 
-
 TrajectoryGenerator:
 - define function
 - write outline of the 8 motions and how long they'll take
@@ -139,7 +139,12 @@ TrajectoryGenerator:
 	of datapoints for traj generation
 - add gripperState as an input to TrajGenerator and functions it uses
 
- ______
+ - debug ScrewTraj versus CartesianTrajectory
+- ask why my motion starts out reasonable and then blows up
+	to crazy behavior - IKinBody? - any way to prevent it 
+- go to Office Hours; get advice____
+ 
+ __
 		
 #########################
 
@@ -155,6 +160,7 @@ Notes
 	offset from the tip to plan motion
 	-> will need to have this one rotated from the end position by a certain angle
 		- people usually use either multiples of 45 or 90 degrees
+- remove joint angles calculations from TrajGenerator functions
 
 
 
