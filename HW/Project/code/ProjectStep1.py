@@ -71,27 +71,29 @@ def NextState(robot_config12, robot_speeds9, dt, w_max):
 	u_array = np.clip(u_array, -w_max, w_max)
 
 	#use EulerStep to calculate next arm joint angles, wheel angles,
-	ddtheta_list = np.zeros(max(robot_config9.shape)) #as long as the thetad array
-	[thetanext, _] = mr.EulerStep(robot_speeds9, ddthetalist)
+	thetalist = robot_config12[3:12]
+	ddtheta_list = np.zeros(max(robot_speeds9.shape)) #as long as the thetad array
+	[thetanext, _] = mr.EulerStep(thetalist, robot_speeds9, ddtheta_list, dt)
 	
 	#use odometry to find next chassis posn 
 	u_array = u_array.reshape((4, 1))
 	Vb = np.dot(F, u_array)
 	Vb6 = np.zeros((6,1))
 	Vb6[2:5] = Vb
+	Vb6 = Vb6.flatten()
 
 	#integrate the twist to get posn in world frame
-	se3mat = mr.VecToSE3()
-	Tcurr_next = mr.MatrixExp(se3mat)
+	se3mat = mr.VecTose3(Vb6)
+	Tcurr_next = mr.MatrixExp6(se3mat)
 
 	R_curr = np.array([
 		[np.cos(phi), -np.sin(phi), 0],
 		[np.sin(phi),  np.cos(phi), 0],
-		[          0,           0, 1],
+		[          0,           0,  1],
 	])
 
 	T_curr = mr.RpToTrans(R_curr, [x, y, 0])
-	T_next = np.dot(Tcurr_next, T_next)
+	T_next = np.dot(T_curr, Tcurr_next)
 
 	#extract phi, x, y from new world frame coords
 	R, p = mr.TransToRp(T_next)
@@ -101,25 +103,58 @@ def NextState(robot_config12, robot_speeds9, dt, w_max):
 	vec = mr.so3ToVec(so3mat)
 	phi_new = max(vec)
 
+	#print("ProjectStep1 debug:")
+	#print(f"\nR: \n{R}\n")
+	#print(f"\nso3mat: \n{so3mat}\n")
+
+	#print(f"\nVb6: \n{Vb6}\n")
+	#print(f"\nse3mat: \n{se3mat}\n")
+
 	#combine phi, x, y with new wheel + robot angles
 	q_new = np.array([phi_new, x_new, y_new])
 	robot_config12_new = np.append(q_new, thetanext.flatten())
 
 	return robot_config12_new
 
+
+def TestNextState(robot_config12, thetad, u, dt, w_max):
+	'''Takes an initial configuration of the youBot and simulates 
+	constant controls for one second. For example, you can set Δt
+	to 0.01 seconds and run a loop that calls NextState 100 times 
+	with constant controls (u,thetad). This program will 
+	write a csv file, where each line has 13 values separated by 
+	commas (the 12-vector consisting of 3 chassis configuration 
+	variables, the 5 arm joint angles, and the 4 wheel angles, plus
+	a "0" for "gripper open") representing the robot's configuration
+	after each integration step. 
+	'''
+	filename = '../csv/next_state_test.csv'
+	#clear out existing data in this file
+	f = open(filename, 'w') #clear out old data
+	f.close()
+
+	#let speed controls be constant
+	robot_speeds9 = np.append(thetad, u)
+	csv_data = np.zeros(13)
+
+	for i in range(100):
+		robot_config12_new = NextState(robot_config12, robot_speeds9, dt, w_max)
+		csv_data[0:12] = robot_config12_new.flatten()
+		write_csv_line(filename, csv_data)
+		robot_config12 = robot_config12_new
+
+
+
+
 if __name__ == '__main__':
     
-    #See geometry.py for starting transformation matrices
-    #k = 1
-    #TrajectoryGenerator(Tse_i, Tsc_i, Tsc_f, Tce_grasp, Tce_standoff, k)
-
 	test_joints = [0, 0, 0, 0, 0, 0.2, -1.6, 0]
 	test_wheels = [0,0,0,0]
 	robot_config12 = test_joints + test_wheels
 
-	robot_speeds9 = np.zeros(9)
+	u = [10, 10, 10, 10] 
+	thetad = np.zeros(5)
 	dt = 0.01
 	w_max = 1000
 
-	NextState(robot_config12, robot_speeds9, dt, w_max, \
-		Blist, M0e, Tb0)
+	TestNextState(robot_config12, thetad, u, dt, w_max)

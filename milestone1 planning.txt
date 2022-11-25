@@ -61,3 +61,21 @@ To-Do:
 	#--> we can derive x, y, from the position vector
 	#--> we can derive phi from the rotation matrix: take the log of an R and 
 		# we get a screw axis we can follow for a joint angle phi
+		
+- possible places where VecToso3() error (core.py line 88) is happening:
+	matrixlog3
+	vectose3
+	adjoint
+	ad - not used
+	
+To-do:
+- testing
+- make w_max an optional input? default to 1000 maybe?
+- debug: current test animation in Scene 4 shows the wheels spinning
+	but the chassis not moving. this suggests the chassis state is not
+	being updated. look first at the CSV data, then look at places in the
+	code where the desired outcome is not being met
+
+	
+Done:
+- function
