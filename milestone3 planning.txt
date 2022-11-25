@@ -1,0 +1,31 @@
+
+To-Do:
+
+- use pseudoinverse to calculate [u thetadot] = Jt(theta) V(t)
+	----> assume no feedback control for now
+- calculate new chassis configuration using odometry
+	- given Vb6 calculated earlier, integrate the twist
+		Tbk-->bk+1 = exp(Vb6)
+	- express position in the world frame:
+		- Tsb,k+1 = Tsb,k * Tbk-->bk+1
+
+Things to fix:
+- pass in Tb0 from the geometry file
+
+
+Done:
+- write NextState() outline
+- determine Tsb(q) from omnidirectional robot control
+- determine Jacobian of arm from Blist; JacobianBody()
+	at given joint angles
+- Find matrix F that relates Vb = F*delta(theta), or 
+	relates motion of the wheels to 
+	
+- Take F from Mobile Robots section and relate to:
+	Vb = F*u
+	Vb6 = [0 0 F 0 ] *u
+	Ve = [AdTeb(theta)]*Vb6
+	Ve = [Ad(  T0e-1(theta) * Tb0^-1)]* F6*u
+	Jarm = [Ad(  T0e-1(theta) * Tb0^-1)]* F6
+	
+- calculate Je(theta) = [Jbase(theta) Jarm(theta)]

@@ -39,3 +39,4 @@ Tce_standoff = np.dot(
 #other parameters for starting TrajectoryGenerator
 #choose starting Tse equal to the values found in CoppeliaSim for Scene 8
 Tse_i = mr.RpToTrans(np.identity(3),[9.4E-2, 9.4E-2, 5.94E-1])
+
