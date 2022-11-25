@@ -11,7 +11,10 @@ Milestone 1
 
 Outline:
 
-You will write a simulator for the kinematics of the youBot. The main function in the simulator, let's call it NextState, is specified by the following inputs and outputs (you may modify these inputs and outputs if you wish):
+You will write a simulator for the kinematics of the youBot. The main 
+function in the simulator, let's call it NextState, is specified by 
+the following inputs and outputs (you may modify these inputs and 
+outputs if you wish):
 
 Input:
 
@@ -47,31 +50,14 @@ The function NextState is based on a simple first-order
 ##################################
 
 To-Do:
-- use pseudoinverse to calculate [u thetadot] = Jt(theta) V(t)
-	----> assume no feedback control for now
-- calculate new chassis configuration using odometry
-	- given Vb6 calculated earlier, integrate the twist
-		Tbk-->bk+1 = exp(Vb6)
-	- express position in the world frame:
-		- Tsb,k+1 = Tsb,k * Tbk-->bk+1
-
-Things to fix:
-- pass in Tb0 from the geometry file
 
 
-Done:
-- write NextState() outline
-- determine Tsb(q) from omnidirectional robot control
-- determine Jacobian of arm from Blist; JacobianBody()
-	at given joint angles
-- Find matrix F that relates Vb = F*delta(theta), or 
-	relates motion of the wheels to 
+	#big question: do we need the second derivative of position?
+	#----> I don't think we do. nothing suggests that we'll need that to
+	#calculate the next position, and we don't return the next velocitiess
 	
-- Take F from Mobile Robots section and relate to:
-	Vb = F*u
-	Vb6 = [0 0 F 0 ] *u
-	Ve = [AdTeb(theta)]*Vb6
-	Ve = [Ad(  T0e-1(theta) * Tb0^-1)]* F6*u
-	Jarm = [Ad(  T0e-1(theta) * Tb0^-1)]* F6
-	
-- calculate Je(theta) = [Jbase(theta) Jarm(theta)]
+	#question: once we have a T matrix for new posn in the world frame, 
+	#how do we go from there to phi, x, y?
+	#--> we can derive x, y, from the position vector
+	#--> we can derive phi from the rotation matrix: take the log of an R and 
+		# we get a screw axis we can follow for a joint angle phi

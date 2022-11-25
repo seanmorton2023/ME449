@@ -12,8 +12,7 @@ import sys
 ######
 
 
-def NextState(robot_config12, robot_speeds9, dt, w_max, 
-			  Blist, M0e, Tb0):
+def NextState(robot_config12, robot_speeds9, dt, w_max):
 	'''	Calculates the next configuration of the robot based on the current state.
 
 	Input:
@@ -31,11 +30,6 @@ def NextState(robot_config12, robot_speeds9, dt, w_max,
 				12.3 radians/s]. Any speed in the 9-vector of controls
 				that is outside this range will be set to the nearest 
 				boundary of the range.
-	- Blist: list of screw axes expressed in the end effector frame
-	- M0e: SE(3) matrix; home configuration of the end effector relative to
-			frame 0 at base of arm on chassis
-	- Tb0: SE(3) matrix; constant offset of base of robot arm on chassis from
-			the chassis frame
 
 	Output: A 12-vector representing the configuration of the 
 		robot time Δt later.
@@ -45,7 +39,6 @@ def NextState(robot_config12, robot_speeds9, dt, w_max,
 	l = 0.47/2.0 #m
 	w = 0.3/2.0  #m
 	r = 0.0475   #m
-	#Tb0 = mr.RpToTrans(np.identity(3), [0.1662, 0, 0.0026])
 
 	#checking of data
 	robot_config12 = np.array(robot_config12)
@@ -62,6 +55,10 @@ def NextState(robot_config12, robot_speeds9, dt, w_max,
 	u_array      = robot_speeds9[0:4]
 	thetad_array = robot_speeds9[4:9]
 
+	phi = q_array[0]
+	x   = q_array[1]
+	y   = q_array[2]  
+
 	#mapping from wheel velocities to velocity in world coords
 	c = r/(l+w) #constant for mapping from wheel speeds to omega in world coords
 	F = np.array([
@@ -70,45 +67,45 @@ def NextState(robot_config12, robot_speeds9, dt, w_max,
 		[-1, 1, -1,  1]	
 	])
 
-	F6 = np.zeros((6,4))
-	F6[2:5, :] = F
+	#do checking if any of the wheel speeds are > w_max; filter w/ numpy function
+	u_array = np.clip(u_array, -w_max, w_max)
 
-	#chassis twist Vb
-	Vb  = np.dot( F, u_array)
-	Vb6 = np.dot(F6, u_array)
-
-	#determine Tsb(q) from omnidirectional robot control
-	phi = q_array[0]
-	x   = q_array[1]
-	y   = q_array[2]  
-
-	Rsb = np.array([
-		[np.cos(phi), -np.sin(phi), 0]
-		[np.sin(phi),  np.cos(phi), 0]
-		[          0,           0,  1]
-	])
+	#use EulerStep to calculate next arm joint angles, wheel angles,
+	ddtheta_list = np.zeros(max(robot_config9.shape)) #as long as the thetad array
+	[thetanext, _] = mr.EulerStep(robot_speeds9, ddthetalist)
 	
-	Tsb = mr.RpToTrans(Rsb, [x, y, 0.0963])
+	#use odometry to find next chassis posn 
+	u_array = u_array.reshape((4, 1))
+	Vb = np.dot(F, u_array)
+	Vb6 = np.zeros((6,1))
+	Vb6[2:5] = Vb
 
-	#determine Jacobian matrices of both arm and mobile base
-	Jarm = mr.JacobianBody(Blist, theta_array)
-	T0e = mr.FKinBody(M0e, Blist, theta_array)
-	Teb = mr.TransInv(np.dot(Tb0, T0e))
-	Jbase = np.dot(mr.Adjoint(Teb), F6)
+	#integrate the twist to get posn in world frame
+	se3mat = mr.VecToSE3()
+	Tcurr_next = mr.MatrixExp(se3mat)
 
-	#J_base is 6x4: 4 wheels
-	#J_arm  is 6x5: 5 joints
-	Je = np.zeros((6, 9))
-	Je[:, 0:4] = Jbase
-	Je[:, 4:9] = Jarm
+	R_curr = np.array([
+		[np.cos(phi), -np.sin(phi), 0],
+		[np.sin(phi),  np.cos(phi), 0],
+		[          0,           0, 1],
+	])
 
-	#construct end effector twist Ve
-	u_thetad = robot_speeds9.reshape((9,1))
-	Ve = np.dot(Je, u_thetad)
+	T_curr = mr.RpToTrans(R_curr, [x, y, 0])
+	T_next = np.dot(Tcurr_next, T_next)
 
+	#extract phi, x, y from new world frame coords
+	R, p = mr.TransToRp(T_next)
+	x_new, y_new = p[0:2]
 
+	so3mat = mr.MatrixLog3(R)
+	vec = mr.so3ToVec(so3mat)
+	phi_new = max(vec)
 
+	#combine phi, x, y with new wheel + robot angles
+	q_new = np.array([phi_new, x_new, y_new])
+	robot_config12_new = np.append(q_new, thetanext.flatten())
 
+	return robot_config12_new
 
 if __name__ == '__main__':
     
