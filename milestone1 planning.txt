@@ -75,7 +75,21 @@ To-do:
 	but the chassis not moving. this suggests the chassis state is not
 	being updated. look first at the CSV data, then look at places in the
 	code where the desired outcome is not being met
-
+	- solved
+- magnitudes of movement:
+	- x and y directions are moving 47.5m with test arrays rather than 
+		0.475m
+		- offset of 100
+		- could it be due to dt? like I might be doing new_state = old_state + change,
+			but maybe I should be doing new_state = old_state + change*dt
+	- may not matter once magnitudes are sorted out but I would
+		like to have phi angles accumulate, not wrap around at pi.
+		see if there's an alt way to find angles other than current 
+			inv cosine
+	- problem doesn't appear to be with EulerStep
+	- concept: I appear to be integrating a twist for delta_t = 1. this
+		doesn't make sense - I'm only following the twist for dt = 0.01 sec
+			- do it, see if it works, then check w/ odeometry chapter
 	
 Done:
 - function

@@ -8,6 +8,7 @@ import core as mr
 from geometry import *
 from helpers import *
 import sys
+import time
 
 ######
 
@@ -60,8 +61,8 @@ def NextState(robot_config12, robot_speeds9, dt, w_max):
 	y   = q_array[2]  
 
 	#mapping from wheel velocities to velocity in world coords
-	c = r/(l+w) #constant for mapping from wheel speeds to omega in world coords
-	F = np.array([
+	c = 1/(l+w) #constant for mapping from wheel speeds to omega in world coords
+	F = r/4 * np.array([
 		[-c, c,  c, -c],
 		[ 1, 1,  1,  1],
 		[-1, 1, -1,  1]	
@@ -72,10 +73,10 @@ def NextState(robot_config12, robot_speeds9, dt, w_max):
 
 	#use EulerStep to calculate next arm joint angles, wheel angles,
 	thetalist = robot_config12[3:12]
-	ddtheta_list = np.zeros(max(robot_speeds9.shape)) #as long as the thetad array
-	[thetanext, _] = mr.EulerStep(thetalist, robot_speeds9, ddtheta_list, dt)
-	
-	#use odometry to find next chassis posn 
+	dthetalist = np.append(thetad_array, u_array)
+	ddthetalist = np.zeros(max(robot_speeds9.shape)) #as long as the thetad array
+	[thetanext, _] = mr.EulerStep(thetalist, dthetalist, ddthetalist, dt)
+
 	u_array = u_array.reshape((4, 1))
 	Vb = np.dot(F, u_array)
 	Vb6 = np.zeros((6,1))
@@ -83,7 +84,7 @@ def NextState(robot_config12, robot_speeds9, dt, w_max):
 	Vb6 = Vb6.flatten()
 
 	#integrate the twist to get posn in world frame
-	se3mat = mr.VecTose3(Vb6)
+	se3mat = mr.VecTose3(Vb6 * dt)
 	Tcurr_next = mr.MatrixExp6(se3mat)
 
 	R_curr = np.array([
@@ -103,13 +104,6 @@ def NextState(robot_config12, robot_speeds9, dt, w_max):
 	vec = mr.so3ToVec(so3mat)
 	phi_new = max(vec)
 
-	#print("ProjectStep1 debug:")
-	#print(f"\nR: \n{R}\n")
-	#print(f"\nso3mat: \n{so3mat}\n")
-
-	#print(f"\nVb6: \n{Vb6}\n")
-	#print(f"\nse3mat: \n{se3mat}\n")
-
 	#combine phi, x, y with new wheel + robot angles
 	q_new = np.array([phi_new, x_new, y_new])
 	robot_config12_new = np.append(q_new, thetanext.flatten())
@@ -117,7 +111,7 @@ def NextState(robot_config12, robot_speeds9, dt, w_max):
 	return robot_config12_new
 
 
-def TestNextState(robot_config12, thetad, u, dt, w_max):
+def RunNextState(robot_config12, u, thetad, dt, w_max):
 	'''Takes an initial configuration of the youBot and simulates 
 	constant controls for one second. For example, you can set Δt
 	to 0.01 seconds and run a loop that calls NextState 100 times 
@@ -128,13 +122,16 @@ def TestNextState(robot_config12, thetad, u, dt, w_max):
 	a "0" for "gripper open") representing the robot's configuration
 	after each integration step. 
 	'''
-	filename = '../csv/next_state_test.csv'
+	filename = '../csv/test_next_state.csv'
 	#clear out existing data in this file
 	f = open(filename, 'w') #clear out old data
 	f.close()
 
+	if (len(u) != 4 or len(thetad) != 5):
+		raise Exception("TestNextState: size mismatch in u or thetad")
+
 	#let speed controls be constant
-	robot_speeds9 = np.append(thetad, u)
+	robot_speeds9 = np.append(u, thetad)
 	csv_data = np.zeros(13)
 
 	for i in range(100):
@@ -144,17 +141,24 @@ def TestNextState(robot_config12, thetad, u, dt, w_max):
 		robot_config12 = robot_config12_new
 
 
-
-
-if __name__ == '__main__':
-    
+def TestNextState():
 	test_base_joints = [0, 0, 0, 0, 0, 0.2, -1.6, 0]
 	test_wheels = [0,0,0,0]
 	robot_config12 = test_base_joints + test_wheels
 
-	u = [10, 10, 10, 10] 
+	u1 = [ 10, 10,  10,  10] #x direction velocity
+	u2 = [-10, 10, -10,  10] #y
+	u3 = [-10, 10,  10, -10] #spinning
+
 	thetad = np.zeros(5)
 	dt = 0.01
 	w_max = 1000
+	w_max = 5
 
-	TestNextState(robot_config12, thetad, u, dt, w_max)
+
+	RunNextState(robot_config12, u1, thetad, dt, w_max)
+
+
+if __name__ == '__main__':
+    TestNextState()
+
