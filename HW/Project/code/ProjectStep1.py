@@ -1,7 +1,7 @@
 '''
 MECH ENG 449
 SEAN MORTON
-PROJECT STEP 2
+PROJECT STEP 1
 '''
 
 import core as mr
@@ -148,9 +148,9 @@ def TestNextState(robot_config12, thetad, u, dt, w_max):
 
 if __name__ == '__main__':
     
-	test_joints = [0, 0, 0, 0, 0, 0.2, -1.6, 0]
+	test_base_joints = [0, 0, 0, 0, 0, 0.2, -1.6, 0]
 	test_wheels = [0,0,0,0]
-	robot_config12 = test_joints + test_wheels
+	robot_config12 = test_base_joints + test_wheels
 
 	u = [10, 10, 10, 10] 
 	thetad = np.zeros(5)

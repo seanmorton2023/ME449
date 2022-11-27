@@ -3,14 +3,13 @@
 import core as mr
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-from helpers import *
 
 Blist = np.array([
-    [0, 0, 1,     0, 0, 0],
-    [0, -1, 0, -0.5076, 0, 0],
-    [0, -1, 0, -0.3526, 0, 0],
-    [0, -1, 0, -0.2176, 0, 0],
-    [0, 0, 1,      0, 0, 0],    
+    [0,  0, 1,       0, 0.033, 0],
+    [0, -1, 0, -0.5076,     0, 0],
+    [0, -1, 0, -0.3526,     0, 0],
+    [0, -1, 0, -0.2176,     0, 0],
+    [0,  0, 1,       0,     0, 0],    
 ]).T
 
 #parameters given by the problem

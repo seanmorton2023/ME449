@@ -3,8 +3,9 @@
     "",
     "\\HW",
     "\\HW\\Project",
-    "\\HW\\Project\\code"
+    "\\HW\\Project\\code",
+    "\\HW\\Project\\csv"
   ],
-  "SelectedNode": "\\__pycache__",
+  "SelectedNode": "\\HW\\Project\\code\\ProjectStep3.py",
   "PreviewInSolutionExplorer": false
 }

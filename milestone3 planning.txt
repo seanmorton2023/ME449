@@ -12,6 +12,21 @@ To-Do:
 Things to fix:
 - pass in Tb0 from the geometry file
 
+New:
+- Je is the only matrix that looks off
+- last 4 columns match the expected output; 5th from last is mostly
+	right except for [3,5] 
+		--> find out what these columns correspond to
+		---> ok these columns correspond to the arm Jacobian; I had
+			an error in my Blist
+- first 4 columns: where the values are supposed to be the same
+	(ex: wheel 1 and 2 vs. wheel 3 and 4), they are;
+	however the values don't match up
+
+- solved. next: test the twist generation with Pi gains of 1 for each
+	aspect of error.
+
+
 
 Done:
 - write NextState() outline

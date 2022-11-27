@@ -1,46 +1,181 @@
-﻿
-def Step3Draft(robot_config12, robot_speeds9, dt, w_max, 
-			  Blist, M0e, Tb0):
+﻿'''
+MECH ENG 449
+SEAN MORTON
+PROJECT STEP 3
+'''
+
+import core as mr
+from geometry import *
+from helpers import *
+import sys
+
+######
+
+def FeedbackControl(X, Xd, Xd_next, Kp, Ki, dt):
 	'''	Calculates the next configuration of the robot based on the current state.
 
 	Input:
-	- robot_config12: A 12-vector representing the current configuration
-			of the robot (3 variables for the chassis configuration, 
-			5 variables for the arm configuration, and 4 variables 
-			for the wheel angles).
-	- robot_speeds9: A 9-vector of controls indicating the wheel speeds u 
-			(4 variables) and the arm joint speeds \dot{\theta} (5 variables).
-	- dt: A timestep Δt.
-	- w_max: A positive real value indicating the maximum angular 
-			speed of the arm joints and the wheels. For example, 
-			if this value is 12.3, the angular speed of the wheels 
-			and arm joints is limited to the range [-12.3 radians/s,
-				12.3 radians/s]. Any speed in the 9-vector of controls
-				that is outside this range will be set to the nearest 
-				boundary of the range.
-	- Blist: list of screw axes expressed in the end effector frame
-	- M0e: SE(3) matrix; home configuration of the end effector relative to
-			frame 0 at base of arm on chassis
-	- Tb0: SE(3) matrix; constant offset of base of robot arm on chassis from
-			the chassis frame
+		- X: The current actual end-effector configuration X (also written Tse).
+		- Xd: The current end-effector reference configuration Xd (i.e., Tse,d).
+		- Xd_next: The end-effector reference configuration at the next timestep in the
+				reference trajectory, Xd,next (i.e., Tse,d,next), at a time Δt later.
+		- Kp, Ki: The PI gain matrices (form: 6x6).
+		- dt: The timestep Δt between reference trajectory configurations.
 
-	Output: A 12-vector representing the configuration of the 
-		robot time Δt later.
+	Global variables used:
+		- Xerr_int: the integral of error over time. Will not be returned as an output
+			of function so is passed into the function as a global variable.
 
+	Output: 
+		- V: commanded end effector twist
 	'''
-	#variables to define: wheel geometry
-	l = 0.47/2.0 #m
-	w = 0.3/2.0  #m
-	r = 0.0475   #m
-	#Tb0 = mr.RpToTrans(np.identity(3), [0.1662, 0, 0.0026])
+	global Xerr_int
 
-	#checking of data
-	robot_config12 = np.array(robot_config12)
-	robot_speeds9 = np.array(robot_speeds9)
+	#compute adjoint to transform desired EE config into current frame
+	Ted = np.dot(mr.TransInv(X), Xd)
+	Ad_ed = mr.Adjoint(Ted)
+	
+	#compute error twist
+	se3mat_err = mr.MatrixLog6(Ted)
+	Xerr = mr.se3ToVec(se3mat_err)
 
-	if len(robot_config12) != 12 or len(robot_speeds9) != 9:
-		raise Exception(f"Lengths of arrays: {len(robot_config_12)} {len(robot_speeds9)}")
+	#compute Vd by taking matrix log of Xd^-1*Xd_next and dividing by timestep dt
+	se3mat_unit = mr.MatrixLog6( np.dot(  mr.TransInv(Xd), Xd_next) )
+	Vd = (1/dt) * mr.se3ToVec(se3mat_unit)
 
+	#calculate products + sums of factors
+	V_new = np.dot(Ad_ed, Vd) + np.dot(Kp, Xerr) + np.dot(Ki, Xerr_int)
+
+	#add to the integral of error
+	Xerr_int += (Xerr * dt)
+
+	print("\nFeedbackControl debug:")
+	print(f"\nVd:         \n{Vd.round(3)}")
+	print(f"\nAd_ed * Vd: \n{np.dot(Ad_ed, Vd).round(3)}")
+	print(f"\nV_new:      \n{V_new.round(3)}")
+	print(f"\nXerr:       \n{Xerr.round(3)}")
+	print(f"\nXerr_int:   \n{Xerr_int.round(3)}")
+
+	return V_new
+
+
+#####
+
+def CalculateJe(robot_config8, Tb0, M0e, Blist):
+	'''Calculates the combined Jacobian Je = [Jbase, Jarm]
+	given a configuration of the robot. Used for solving for
+	the joint speeds and wheel speeds of the robot.
+
+	Inputs:
+	- robot_config8: 3 chassis posns and 5 joint angles
+	- Tb0: offset between the base of the chassis and the
+		base of the robot arm
+	- M0e: home configuration of the end effector
+	- Blist: screw axes of the robot in the end effector frame
+
+	Output:
+	- Je: combined Jacobian
+	'''
+	q_array     = robot_config8[0:3]
+	theta_array = robot_config8[3:8]
+
+	#mapping from wheel velocities to velocity in world coords
+	r = 0.0475
+	l = 0.47/2.0
+	w = 0.3/2.0
+
+	c = 1/(l+w) #constant for mapping from wheel speeds to omega in world coords
+	F = r/4 * np.array([
+		[-c, c,  c, -c],
+		[ 1, 1,  1,  1],
+		[-1, 1, -1,  1]	
+	])
+
+	F6 = np.zeros((6,4))
+	F6[2:5, :] = F
+
+	#determine Tsb(q) from omnidirectional robot control
+	phi = q_array[0]
+	x   = q_array[1]
+	y   = q_array[2]  
+
+	Rsb = np.array([
+		[np.cos(phi), -np.sin(phi), 0],
+		[np.sin(phi),  np.cos(phi), 0],
+		[          0,           0,  1],
+	])
+	
+	Tsb = mr.RpToTrans(Rsb, [x, y, 0.0963])
+
+	#determine Jacobian matrices of both arm and mobile base
+	#Blist, M0e, Tb0 determined in Geometry file
+	Jarm = mr.JacobianBody(Blist, theta_array)
+	T0e = mr.FKinBody(M0e, Blist, theta_array)
+	Teb = mr.TransInv(np.dot(Tb0, T0e))
+	Jbase = np.dot(mr.Adjoint(Teb), F6)
+
+	#J_base is 6x4: 4 wheels
+	#J_arm  is 6x5: 5 joints
+	Je = np.zeros((6, 9))
+	Je[:, 0:4] = Jbase
+	Je[:, 4:9] = Jarm
+
+	return Je
+
+
+
+if __name__ == '__main__':
+	
+	global Xerr_int
+	Xerr_int = 0
+
+	X = np.array([
+		[ 0.170, 0, 0.985, 0.387],
+		[     0, 1,     0,     0],
+		[-0.985, 0, 0.170, 0.570],
+		[     0, 0,     0,     1]
+	])
+
+	Xd = np.array([
+		[ 0, 0, 1, 0.5],
+		[ 0, 1, 0,   0],
+		[-1, 0, 0, 0.5],
+		[ 0, 0, 0,   1]
+	])
+
+	Xd_next = np.array([
+		[ 0, 0, 1, 0.6],
+		[ 0, 1, 0,   0],
+		[-1, 0, 0, 0.3],
+		[ 0, 0, 0,   1]
+	])
+
+	Kp = 0
+	Ki = 0
+	dt =  0.01
+
+	V_new = FeedbackControl(X, Xd, Xd_next, Kp, Ki, dt)
+
+	#convert end effector twist into joint and wheel velocities
+	robot_config8 = np.array([0, 0, 0, 0, 0, 0.2, -1.6, 0])
+	Je = CalculateJe(robot_config8, Tb0, M0e, Blist)
+	u_thetad = np.dot(JPseudoInverse(Je), V_new)
+
+	print("\nProjectStep3 debug:")
+	print(f"\nJe:          \n{Je.round(3)}")
+	print(f"\nu, thetadot: \n{u_thetad.round(1)}")
+
+
+
+
+
+
+
+
+
+#### old stuff that I still want to keep for the full integration of the project
+
+'''
 	#world coords, joint angles theta, wheel angles phi
 	q_array      = robot_config12[0:3]
 	theta_array  = robot_config12[3:8]
@@ -92,3 +227,6 @@ def Step3Draft(robot_config12, robot_speeds9, dt, w_max,
 	#construct end effector twist Ve
 	u_thetad = robot_speeds9.reshape((9,1))
 	Ve = np.dot(Je, u_thetad)
+
+
+'''
