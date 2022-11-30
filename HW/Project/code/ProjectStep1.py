@@ -88,14 +88,7 @@ def NextState(robot_config12, robot_speeds9, dt, w_max):
 	se3mat = mr.VecTose3(Vb6)
 
 	Tcurr_next = mr.MatrixExp6(se3mat)
-
-	R_curr = np.array([
-		[np.cos(phi), -np.sin(phi), 0],
-		[np.sin(phi),  np.cos(phi), 0],
-		[          0,           0,  1],
-	])
-
-	T_curr = mr.RpToTrans(R_curr, [x, y, 0])
+	T_curr = ChassisSE3(phi, x, y)
 	T_next = np.dot(T_curr, Tcurr_next)
 
 	#extract phi, x, y from new world frame coords

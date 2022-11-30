@@ -1,0 +1,71 @@
+final project planning
+ME449
+
+
+
+##############
+
+Full project integration
+
+############
+
+
+To-Do:
+- allow NextState() to take in a 13-vector; do value checking. if len() = 13,
+	do something; otherwise if len() != 12, raise exception
+	- don't do this b/c it'll make testing NextState() more arduous.
+		edit it in post
+- edit TrajGenerator to scale times of each trajectory segment to meet a desired
+	amount of time
+		- related: ensure dt fed to NextState(), dt fed to FBC(), and 
+			dt used to generate trajectories agree
+		
+Code outline:
+once robot_config13_array and Xerr_array are populated:
+- save results to CSV files for each
+- plot the error over time:
+	- Xerr is a twist; can plot either	
+		- all 6 elements of Xerr over time, or
+		- magnitude of linear error and angular error (may be more readable)
+		
+		
+Done:
+- make a function to convert from trajectories in Array13 form back
+	to SE(3) matrices
+		- simple: np.reshape() on the 1st 9 elements, reshape to 3x1 for the
+			next 3 els; return gripperState too
+		- test with matrices other than I
+- Modify FeedbackControl() to:
+	- take in Xerr_int. I prefer this over modifying a global variable.
+	- return a tuple (Xerr, Xerr_int) along with Vnew, in order to track Xerr_int
+		and to plot Xerr
+		
+		
+- Define initial robot posn as 13-vector: robot_config13
+- generate reference trajectory from init. EE config to desired
+	EE config using TrajGenerator
+- N = len(ref_traj)
+
+define Xerr_array = np.zeros(N-1) 
+define robot_config13_array = np.zeros((N,13))
+set robot_config13_array[0] = robot_config13
+set Xerr_array[0]=..? --> won't know this 
+
+- for i in range(N-1):
+	- calculate current SE(3) config from robot_config13
+		- Tsb: uses chassis phi, x, y
+		- Tb0: constant
+		- T0e: use forward kinematics
+	- set Xd = ref_traj[i]
+		- will need to convert from 13-vector to SE(3) mat
+	- set Xd_next = ref_traj[i+1]
+		- will need to convert from 13-vector to SE(3) mat
+	- run FeedbackControl() and get:
+		- next EE twist
+		- Xerr
+		- Xerr_int
+	- set robot_config13 = NextState(twist)
+	
+	- set robot_config13_array[i+1] = robot_config13
+	- set Xerr_array[i] = Xerr
+	

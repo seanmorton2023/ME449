@@ -11,25 +11,25 @@ import sys
 
 ######
 
-def FeedbackControl(X, Xd, Xd_next, Kp, Ki, dt):
+def FeedbackControl(X, Xd, Xd_next, Kp, Ki, Xerr_int, dt):
 	'''	Calculates the next configuration of the robot based on the current state.
 
 	Input:
-		- X: The current actual end-effector configuration X (also written Tse).
-		- Xd: The current end-effector reference configuration Xd (i.e., Tse,d).
-		- Xd_next: The end-effector reference configuration at the next timestep in the
-				reference trajectory, Xd,next (i.e., Tse,d,next), at a time Δt later.
-		- Kp, Ki: The PI gain matrices (form: 6x6).
-		- dt: The timestep Δt between reference trajectory configurations.
+		- X          (SE(3)mat): 		The current actual end-effector configuration X (also written Tse).
+		- Xd         (SE(3)mat): 		The current end-effector reference configuration Xd (i.e., Tse,d).
+		- Xd_next    (SE(3)mat): 		The end-effector reference configuration at the next timestep
+										in the reference trajectory, Xd,next (i.e., Tse,d,next), 
+										at a time Δt later.
+		- Kp, Ki  (R6x6, numpy):		The PI gain matrices.
+		- Xerr_int  (6x1 twist): 		the integral of error over time; will be added to and returned by the function
+		- dt            (float): 		The timestep Δt between reference trajectory configurations.
 
-	Global variables used:
-		- Xerr_int: the integral of error over time. Will not be returned as an output
-			of function so is passed into the function as a global variable.
+	Output: V_new, (Xerr, Xerr_int)
+		- V_new     (6x1 twist):		commanded end effector twist
+		- Xerr      (6x1 twist):		current error from the desired position
+		- Xerr_int  (6x1 twist):		integral of error from desired position
 
-	Output: 
-		- V: commanded end effector twist
 	'''
-	global Xerr_int
 
 	#compute adjoint to transform desired EE config into current frame
 	Ted = np.dot(mr.TransInv(X), Xd)
@@ -56,7 +56,7 @@ def FeedbackControl(X, Xd, Xd_next, Kp, Ki, dt):
 	#print(f"\nXerr:       \n{Xerr.round(3)}")
 	#print(f"\nXerr_int:   \n{Xerr_int.round(3)}")
 
-	return V_new
+	return V_new, (Xerr, Xerr_int)
 
 
 #####
@@ -95,17 +95,8 @@ def CalculateJe(robot_config8, Tb0, M0e, Blist):
 	F6[2:5, :] = F
 
 	#determine Tsb(q) from omnidirectional robot control
-	phi = q_array[0]
-	x   = q_array[1]
-	y   = q_array[2]  
-
-	Rsb = np.array([
-		[np.cos(phi), -np.sin(phi), 0],
-		[np.sin(phi),  np.cos(phi), 0],
-		[          0,           0,  1],
-	])
-	
-	Tsb = mr.RpToTrans(Rsb, [x, y, 0.0963])
+	[phi, x, y] = q_array
+	Tsb = ChassisSE3(phi, x, y)
 
 	#determine Jacobian matrices of both arm and mobile base
 	#Blist, M0e, Tb0 determined in Geometry file
@@ -125,7 +116,7 @@ def CalculateJe(robot_config8, Tb0, M0e, Blist):
 
 def TestFeedbackControl():
 
-	global Xerr_int
+	#global Xerr_int
 	Xerr_int = 0
 
 	X = np.array([
@@ -153,7 +144,7 @@ def TestFeedbackControl():
 	Ki = 0
 	dt =  0.01
 
-	V_new = FeedbackControl(X, Xd, Xd_next, Kp, Ki, dt)
+	V_new, _ = FeedbackControl(X, Xd, Xd_next, Kp, Ki, Xerr_int, dt)
 
 	#convert end effector twist into joint and wheel velocities
 	robot_config8 = np.array([0, 0, 0, 0, 0, 0.2, -1.6, 0])
@@ -172,13 +163,13 @@ def TestFeedbackControl():
 	Xerr_int = 0
 
 	print("\nWith nonzero Kp:")
-	V_new = FeedbackControl(X, Xd, Xd_next, Kp, Ki, dt)
+	V_new, _ = FeedbackControl(X, Xd, Xd_next, Kp, Ki, Xerr_int, dt)
 	Je = CalculateJe(robot_config8, Tb0, M0e, Blist)
 	u_thetad = np.dot(np.linalg.pinv(Je, rcond=1e-4), V_new)
 	print(f"\nu, thetadot: \n{u_thetad.round(1)}")
 
+
 if __name__ == '__main__':
-	
 	TestFeedbackControl()
 
 

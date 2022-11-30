@@ -95,12 +95,12 @@ def TrajectoryGenerator(Tse_i, Tsc_i, Tsc_f, Tce_grasp, Tce_standoff, k):
         positions_array.append(np.array(array_rep13_list))
 
     #convert list of trajectory segments to array and store as csv
-    print("Shape of trajectory segments:")
+    print("TrajGenerator - shape of trajectory segments:")
     for arr in positions_array:
         print(arr.shape)
     
     arr_new = np.concatenate(positions_array, axis=0)
-    write_csv_mat('../csv/test_traj.csv', arr_new)
+    write_csv_mat('../csv/trajectory.csv', arr_new)
     print("\nResults written to /csv folder.")
 
     return arr_new
@@ -112,5 +112,7 @@ def TrajectoryGenerator(Tse_i, Tsc_i, Tsc_f, Tce_grasp, Tce_standoff, k):
 if __name__ == '__main__':
     
     #See geometry.py for starting transformation matrices
+    #choose starting Tse equal to the values found in CoppeliaSim for Scene 8
+    Tse_i = mr.RpToTrans(np.identity(3),[9.4E-2, 9.4E-2, 5.94E-1])
     k = 1
     TrajectoryGenerator(Tse_i, Tsc_i, Tsc_f, Tce_grasp, Tce_standoff, k)

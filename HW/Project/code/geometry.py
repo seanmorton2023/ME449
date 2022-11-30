@@ -22,7 +22,7 @@ Tsc_f = np.array([
     ])
 
 
-Tsb_0  = mr.RpToTrans(np.identity(3), [ 0.406, 0, 0.0963]).tolist()
+#Tsb_0  = mr.RpToTrans(np.identity(3), [ 0.406, 0, 0.0963]).tolist()
 Tb0    = mr.RpToTrans(np.identity(3), [0.1662, 0, 0.0026]).tolist()
 M0e    = mr.RpToTrans(np.identity(3), [ 0.033, 0, 0.6546]).tolist()
 
@@ -34,8 +34,4 @@ Tce_standoff = np.dot(
     mr.RpToTrans(np.identity(3),dist * np.array([0,0,1])), \
     mr.RpToTrans(R_ee_to_obj, [0,0,0]) \
 ).tolist() #orientation relative to object at standoff
-
-#other parameters for starting TrajectoryGenerator
-#choose starting Tse equal to the values found in CoppeliaSim for Scene 8
-Tse_i = mr.RpToTrans(np.identity(3),[9.4E-2, 9.4E-2, 5.94E-1])
 
