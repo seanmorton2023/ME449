@@ -32,11 +32,3 @@ def SE3matToArray13(matrix, gripperState):
     #a 13-by-1 array, for the sake of storing values in a CSV file
     T = np.array(matrix)
     return np.append(np.append(T[:3,:3], T[:3,3]), gripperState).tolist()
-
-def JPseudoInverse(J):
-    '''Calculates the Jacobian pseudo-inverse matrix.
-    '''
-    J = np.array(J)
-    Jt = J.T
-    inv = np.linalg.inv( np.dot(J, Jt))
-    return np.dot(Jt, inv)

@@ -9,8 +9,6 @@ from geometry import *
 from helpers import *
 import sys
 
-global Xerr_int
-
 ######
 
 def FeedbackControl(X, Xd, Xd_next, Kp, Ki, dt):
@@ -125,9 +123,9 @@ def CalculateJe(robot_config8, Tb0, M0e, Blist):
 	return Je
 
 
+def TestFeedbackControl():
 
-if __name__ == '__main__':
-	
+	global Xerr_int
 	Xerr_int = 0
 
 	X = np.array([
@@ -160,7 +158,9 @@ if __name__ == '__main__':
 	#convert end effector twist into joint and wheel velocities
 	robot_config8 = np.array([0, 0, 0, 0, 0, 0.2, -1.6, 0])
 	Je = CalculateJe(robot_config8, Tb0, M0e, Blist)
-	u_thetad = np.dot(JPseudoInverse(Je), V_new)
+	#u_thetad = np.dot(JPseudoInverse(Je), V_new)
+	u_thetad = np.dot(np.linalg.pinv(Je, rcond=1e-4), V_new)
+
 	#print("\nProjectStep3 debug:")
 	print(f"\nu, thetadot: \n{u_thetad.round(1)}")
 
@@ -171,10 +171,15 @@ if __name__ == '__main__':
 	Ki = 0
 	Xerr_int = 0
 
+	print("\nWith nonzero Kp:")
 	V_new = FeedbackControl(X, Xd, Xd_next, Kp, Ki, dt)
 	Je = CalculateJe(robot_config8, Tb0, M0e, Blist)
-	u_thetad = np.dot(JPseudoInverse(Je), V_new)
+	u_thetad = np.dot(np.linalg.pinv(Je, rcond=1e-4), V_new)
 	print(f"\nu, thetadot: \n{u_thetad.round(1)}")
+
+if __name__ == '__main__':
+	
+	TestFeedbackControl()
 
 
 

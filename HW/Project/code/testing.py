@@ -1,4 +1,3 @@
-@@ -1,92 +0,0 @@
 import numpy as np
 import core as mr
 from geometry import *

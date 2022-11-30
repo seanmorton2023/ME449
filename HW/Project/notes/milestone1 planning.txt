@@ -1,0 +1,95 @@
+final project planning
+ME449
+
+
+
+##############
+
+Milestone 1
+
+############
+
+Outline:
+
+You will write a simulator for the kinematics of the youBot. The main 
+function in the simulator, let's call it NextState, is specified by 
+the following inputs and outputs (you may modify these inputs and 
+outputs if you wish):
+
+Input:
+
+A 12-vector representing the current configuration
+	of the robot (3 variables for the chassis configuration, 
+	5 variables for the arm configuration, and 4 variables 
+	for the wheel angles).
+A 9-vector of controls indicating the wheel speeds u 
+	(4 variables) and the arm joint speeds \dot{\theta} (5 variables).
+A timestep Δt.
+A positive real value indicating the maximum angular 
+	speed of the arm joints and the wheels. For example, 
+	if this value is 12.3, the angular speed of the wheels 
+	and arm joints is limited to the range [-12.3 radians/s,
+	 12.3 radians/s]. Any speed in the 9-vector of controls
+	 that is outside this range will be set to the nearest 
+	 boundary of the range. If you don't want speed limits,
+	 just use a very large number. If you prefer, your 
+	 function can accept separate speed limits for the 
+	 wheels and arm joints.
+Output: A 12-vector representing the configuration of the 
+	robot time Δt later.
+
+The function NextState is based on a simple first-order
+	Euler step, i.e.,
+
+	new arm joint angles = (old arm joint angles) + (joint speeds) * Δt
+	new wheel angles = (old wheel angles) + (wheel speeds) * Δt
+	new chassis configuration is obtained from odometry, 
+		as described in Chapter 13.4
+
+
+##################################
+
+To-Do:
+
+
+	#big question: do we need the second derivative of position?
+	#----> I don't think we do. nothing suggests that we'll need that to
+	#calculate the next position, and we don't return the next velocitiess
+	
+	#question: once we have a T matrix for new posn in the world frame, 
+	#how do we go from there to phi, x, y?
+	#--> we can derive x, y, from the position vector
+	#--> we can derive phi from the rotation matrix: take the log of an R and 
+		# we get a screw axis we can follow for a joint angle phi
+		
+- possible places where VecToso3() error (core.py line 88) is happening:
+	matrixlog3
+	vectose3
+	adjoint
+	ad - not used
+	
+To-do:
+- testing
+- make w_max an optional input? default to 1000 maybe?
+- debug: current test animation in Scene 4 shows the wheels spinning
+	but the chassis not moving. this suggests the chassis state is not
+	being updated. look first at the CSV data, then look at places in the
+	code where the desired outcome is not being met
+	- solved
+- magnitudes of movement:
+	- x and y directions are moving 47.5m with test arrays rather than 
+		0.475m
+		- offset of 100
+		- could it be due to dt? like I might be doing new_state = old_state + change,
+			but maybe I should be doing new_state = old_state + change*dt
+	- may not matter once magnitudes are sorted out but I would
+		like to have phi angles accumulate, not wrap around at pi.
+		see if there's an alt way to find angles other than current 
+			inv cosine
+	- problem doesn't appear to be with EulerStep
+	- concept: I appear to be integrating a twist for delta_t = 1. this
+		doesn't make sense - I'm only following the twist for dt = 0.01 sec
+			- do it, see if it works, then check w/ odeometry chapter
+	
+Done:
+- function

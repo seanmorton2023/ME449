@@ -78,13 +78,15 @@ def NextState(robot_config12, robot_speeds9, dt, w_max):
 	[thetanext, _] = mr.EulerStep(thetalist, dthetalist, ddthetalist, dt)
 
 	u_array = u_array.reshape((4, 1))
-	Vb = np.dot(F, u_array)
+	Vb = np.dot(F, u_array * dt)
 	Vb6 = np.zeros((6,1))
 	Vb6[2:5] = Vb
 	Vb6 = Vb6.flatten()
 
 	#integrate the twist to get posn in world frame
-	se3mat = mr.VecTose3(Vb6 * dt)
+	#se3mat = mr.VecTose3(Vb6 * dt)
+	se3mat = mr.VecTose3(Vb6)
+
 	Tcurr_next = mr.MatrixExp6(se3mat)
 
 	R_curr = np.array([
@@ -142,6 +144,11 @@ def RunNextState(robot_config12, u, thetad, dt, w_max):
 
 
 def TestNextState():
+	'''A program for testing NextState() using sample imputs u1,
+	u2, and u3. Writing to CSV is handled in RunNextState(), another
+	helper function for testing.
+	'''
+
 	test_base_joints = [0, 0, 0, 0, 0, 0.2, -1.6, 0]
 	test_wheels = [0,0,0,0]
 	robot_config12 = test_base_joints + test_wheels
@@ -152,9 +159,8 @@ def TestNextState():
 
 	thetad = np.zeros(5)
 	dt = 0.01
-	w_max = 1000
+	#w_max = 1000
 	w_max = 5
-
 
 	RunNextState(robot_config12, u1, thetad, dt, w_max)
 

@@ -1,0 +1,183 @@
+final project planning
+ME449
+
+
+Milestone 2
+
+
+##########################
+
+TO-DO
+
+#########################
+
+- implement more proper testing of TrajGenerator
+	- for example look at all the start and end SE3s and make
+		sure they're as expected
+- fix GripperState issue
+
+
+#new
+
+- check requirements for submission
+- test sample motions with TrajGenerator
+- record video of the motion of the end effector in Scene 8
+- make a function to convert SE3mat to array
+____
+
+Outline:
+
+
+1. A trajectory to move the gripper from its initial configuration to a "standoff" configuration a few cm above the block.
+2. A trajectory to move the gripper down to the grasp position.
+3. Closing of the gripper.
+4. A trajectory to move the gripper back up to the "standoff" configuration.
+5. A trajectory to move the gripper to a "standoff" configuration above the final configuration.
+6. A trajectory to move the gripper to the final configuration of the object.
+7. Opening of the gripper.
+8. A trajectory to move the gripper back to the "standoff" configuration.
+
+
+_________
+
+#############
+
+DONE
+
+############
+
+- find geometry in CoppeliaSim
+- implement testing for:
+	- GenerateStandoffSE3
+	- write_csv_line
+	- write_csv_mat
+	- EE rotation matrix to object SE3
+	
+	
+- convert SE(3) trajectory to joint angles:
+	- iterates through a list of trans. matrices and:
+		- runs inverse kinematics for the given 
+		- stores joint angles in a a list of lists of angles
+	- uses:
+		- [thetalist,success] = IKinBody(Blist,M,T,thetalist0,eomg,ev)
+	- returns the list of joint angles to move through the trajectory
+	
+	- written, debug
+	
+- implement testing for:
+	`- convertSE3toJointAngles
+	 - jointAnglesStartToEnd
+	 - do these by outputting a trajectory to a CSV file and
+		having CoppeliaSim run it
+- get a sense of scale of what transformation matrices we 
+	should expect by manually moving joint sliders and looking for the
+	SE3 in CSim, then seeing if plugging it into IKinBody gives
+	the same values
+	
+	
+testing trajectory creation:
+- write out transformation matrices needed to get from 
+	end effector start posn to end effector final posn, by hand
+- compute transformation matrices in Python
+- create sample trajectories using trans. matrices found
+
+- close gripper():
+	- could use force control to create a good grip
+	- realistically will just maintain motors at a const. torque
+	
+- open gripper():
+	- set motor torque at gripper to 0 
+	
+- Forward Dynamics:
+	- not needed for simulating joint motion in CoppeliaSim as there are 
+		no forces in directions that any joint but the gripper
+		has to resist motion
+	- would be needed if we were running this IRL though
+
+- write to CSV:
+	- reuse from last HW
+
+- create function that can find standoff SE3, in space frame, above object
+	- same for final position
+	- inputs: transformation matrix of object location rel. to. world,
+		scalar distance of standoff above part, 
+		direction of displacement of standoff
+	- operations: applies a translation in the right axis of the object frame
+		to produce a transformation matrix for the standoff
+	- uses: mr.RpToTrans(R, p), np.identity()
+	- returns: a transformation matrix corr. to. standoff
+	
+	## potential bug ## do error checking to see if the matrix this outputs 
+		can be used for other MR programs
+		
+Targets:
+- generate standoff position from object initial position
+- generate standoff-to-object trajectory
+	- inputs: a transformation matrix for standoff, a transformation matrix
+	- already done in CartesianTrajectory
+	
+ Functions for generating trajectories in each segment of code:
+- jointAnglesStartToEnd(Xstart, Xend, Blist, M, thetalist0, eomg, ev):
+	- generates a trajectory using CartesianTrajectory()
+	- converts to a list of joint angles using convertSE3toJointAngles()
+	- returns an array of thetalists
+
+First iteration uses the joint angles at the starting config of robot.
+Successive iterations use the last joint angles from the previous list
+	of joint angles generated
+
+TrajectoryGenerator:
+- define function
+- write outline of the 8 motions and how long they'll take
+	- can do this by watching robot movement in the sample vid
+	
+- define number of points needed to make full traj. happen;
+	30s total, updates every 0.01s
+	
+- define time each motion will take
+- scale each time by the time per motion of the robot, k, to get number
+	of datapoints for traj generation
+- add gripperState as an input to TrajGenerator and functions it uses
+
+ - debug ScrewTraj versus CartesianTrajectory
+- ask why my motion starts out reasonable and then blows up
+	to crazy behavior - IKinBody? - any way to prevent it 
+- go to Office Hours; get advice____
+ 
+ __
+		
+#########################
+
+Notes
+
+#######################
+
+- rotation matrix of tip is wrong; may not matter bc there is no part
+	that will move the tip frame relative to the end effector frame
+- pad angles with dummy angles if going to use it in scene 6,
+	can otherwise use a different scene that doesn't use the mobile base
+-  don't use the frame in between the prongs of the EE, use the frame
+	offset from the tip to plan motion
+	-> will need to have this one rotated from the end position by a certain angle
+		- people usually use either multiples of 45 or 90 degrees
+- remove joint angles calculations from TrajGenerator functions
+
+
+
+
+
+Questions
+
+- The trajectory I've generated is discontinuous - jumps from about 0 to 2pi.
+	Is there a way to avoid this, or is post-processing the values enough?
+- when I use CartesianTrajectory, I get a reasonable curve to get from start
+	to end trajectory, but when I use ScrewTrajectory, my angles computed by
+	IKinBody() diverge to larger and larger values. How do I fix this?
+		-> I want to use ScrewTraj so the robot arm doesn't scrunch up and
+			self-intersect
+
+
+
+
+______
+end milestone 2
