@@ -19,6 +19,8 @@ To-Do:
 	amount of time
 		- related: ensure dt fed to NextState(), dt fed to FBC(), and 
 			dt used to generate trajectories agree
+- find out why V_new is generating as a 6x6 matrix rather than a twist
+- test out trajectory.csv to make sure path makes sense
 		
 Code outline:
 once robot_config13_array and Xerr_array are populated:
@@ -27,6 +29,24 @@ once robot_config13_array and Xerr_array are populated:
 	- Xerr is a twist; can plot either	
 		- all 6 elements of Xerr over time, or
 		- magnitude of linear error and angular error (may be more readable)
+		
+		
+- Notes:
+	- significant error from desired path
+		- resolved! with just Kp = 1 it's pretty good at tracking
+	- robot starts out doing lots of jerky motions - must be because
+		it starts out at a singularity
+			- check if changing the tol. on pinv() would help - experiment
+				with 1E-2 and 1E-3
+			- results: 1E-3 was too jerky; 1E-2 had some issues with not 
+				tracking as fast as the other arrays, but it was stable
+			- if other places use pinv() use it again there
+	- robot wheels seem to slide - check on conversion of joint motions
+		to wheel motions
+			- sliding seems less "bad" but still some motion orthogonal 
+				to rollers
+	- gripper does not open or close
+		
 		
 		
 Done:

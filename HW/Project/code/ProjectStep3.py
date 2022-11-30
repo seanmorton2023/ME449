@@ -49,10 +49,10 @@ def FeedbackControl(X, Xd, Xd_next, Kp, Ki, Xerr_int, dt):
 	#add to the integral of error
 	Xerr_int += (Xerr * dt)
 
-	print("\nFeedbackControl debug:")
+	#print("\nFeedbackControl debug:")
 	#print(f"\nVd:         \n{Vd.round(3)}")
 	#print(f"\nAd_ed * Vd: \n{np.dot(Ad_ed, Vd).round(3)}")
-	print(f"\nV_new:      \n{V_new.round(3)}")
+	#print(f"\nV_new:      \n{V_new.round(3)}")
 	#print(f"\nXerr:       \n{Xerr.round(3)}")
 	#print(f"\nXerr_int:   \n{Xerr_int.round(3)}")
 
@@ -150,7 +150,7 @@ def TestFeedbackControl():
 	robot_config8 = np.array([0, 0, 0, 0, 0, 0.2, -1.6, 0])
 	Je = CalculateJe(robot_config8, Tb0, M0e, Blist)
 	#u_thetad = np.dot(JPseudoInverse(Je), V_new)
-	u_thetad = np.dot(np.linalg.pinv(Je, rcond=1e-4), V_new)
+	u_thetad = np.dot(np.linalg.pinv(Je, rcond=1e-2), V_new)
 
 	#print("\nProjectStep3 debug:")
 	print(f"\nu, thetadot: \n{u_thetad.round(1)}")
@@ -165,7 +165,7 @@ def TestFeedbackControl():
 	print("\nWith nonzero Kp:")
 	V_new, _ = FeedbackControl(X, Xd, Xd_next, Kp, Ki, Xerr_int, dt)
 	Je = CalculateJe(robot_config8, Tb0, M0e, Blist)
-	u_thetad = np.dot(np.linalg.pinv(Je, rcond=1e-4), V_new)
+	u_thetad = np.dot(np.linalg.pinv(Je, rcond=1e-2), V_new)
 	print(f"\nu, thetadot: \n{u_thetad.round(1)}")
 
 

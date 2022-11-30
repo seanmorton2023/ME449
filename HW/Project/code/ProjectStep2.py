@@ -4,14 +4,12 @@ SEAN MORTON
 PROJECT STEP 2
 '''
 
-#import code.core as mr
-#from code.geometry import *
-#from code.helpers import *
-
 import core as mr
+import numpy as np
+from tqdm import tqdm
+
 from geometry import *
 from helpers import *
-import sys
 
 def TrajectoryGenerator(Tse_i, Tsc_i, Tsc_f, Tce_grasp, Tce_standoff, k):
     '''
@@ -78,7 +76,8 @@ def TrajectoryGenerator(Tse_i, Tsc_i, Tsc_f, Tce_grasp, Tce_standoff, k):
     #repeat the process of trajectory generation for each segment of motion.
     #for gripping segments, produce a constant set of the same SE(3) matrix and
     #gripper state over time, to allow gripper to open/close
-    for i in range(len(N_array)):
+    print("TrajectoryGenerator():")
+    for i in tqdm(range(len(N_array))):
 
         #case: gripper needs to take time to open or close
         if (i == 2 or i == 6):
@@ -95,7 +94,7 @@ def TrajectoryGenerator(Tse_i, Tsc_i, Tsc_f, Tce_grasp, Tce_standoff, k):
         positions_array.append(np.array(array_rep13_list))
 
     #convert list of trajectory segments to array and store as csv
-    print("TrajGenerator - shape of trajectory segments:")
+    print("\nTrajGenerator - shape of trajectory segments:")
     for arr in positions_array:
         print(arr.shape)
     
