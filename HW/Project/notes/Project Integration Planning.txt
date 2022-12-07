@@ -11,29 +11,27 @@ Full project integration
 
 
 To-Do:
-- allow NextState() to take in a 13-vector; do value checking. if len() = 13,
-	do something; otherwise if len() != 12, raise exception
-	- don't do this b/c it'll make testing NextState() more arduous.
-		edit it in post
-- edit TrajGenerator to scale times of each trajectory segment to meet a desired
-	amount of time
-		- related: ensure dt fed to NextState(), dt fed to FBC(), and 
-			dt used to generate trajectories agree
-- find out why V_new is generating as a 6x6 matrix rather than a twist
-- test out trajectory.csv to make sure path makes sense
-		
-Code outline:
-once robot_config13_array and Xerr_array are populated:
-- save results to CSV files for each
-- plot the error over time:
-	- Xerr is a twist; can plot either	
-		- all 6 elements of Xerr over time, or
-		- magnitude of linear error and angular error (may be more readable)
-		
-		
+- note: changed Rcond = 1E-2 to 1E-1 in pinv() due to some jitteriness
+	/instability during tuning Pi
+- ask about whether wheel motions make sense; what could be causing jerking
+	of chassis forward
+- in addition to Jacobian Pseudoinverse limits:
+	- impose limits on joint velocities. they recommend this in the assignment
+	- see what reasonable limits are for both joints and wheels individually
+		based on velocities in file
+- add time arrays to plots using t_span and dt to make x axis more meaningful
+- in end: remove u_thetad arrays from simulation code
+- joint and wheel angle velocities:
+	- not complying with specified velocity limits
+	- real wheel speeds can go to up to +/- 10; jerky speeds can be magnitude of 
+		5, 10, or 25
+	- real joint speeds can go up to +/- 10; jerky speeds can be order of magnitude of 5, 
+		10, or 20
+	- impose limit of 10 just to make sure limits work; then refine method
+		of preventing jerk
+
+			
 - Notes:
-	- significant error from desired path
-		- resolved! with just Kp = 1 it's pretty good at tracking
 	- robot starts out doing lots of jerky motions - must be because
 		it starts out at a singularity
 			- check if changing the tol. on pinv() would help - experiment
@@ -45,11 +43,91 @@ once robot_config13_array and Xerr_array are populated:
 		to wheel motions
 			- sliding seems less "bad" but still some motion orthogonal 
 				to rollers
-	- gripper does not open or close
+	- log file: shows the progress of your code, that you ran it, and that it
+		finished. shows the TAs approx. how long program should take
+			- for this course it's not too long; but it's good to have it
+				anyway
+	- inputs: program doesn't have to have inputs, like described in the 
+		file; can just have diff. matrices that you comment and uncomment
+		out
+	- error twist: can plot angular and linear components of error on one 
+		plot or separate plots.
+	 - make dt from simulation show up in plots
+	 - can try:
+		-limiting accel of joints from one timestep to another
+			- max reasonable accel appears to be 0.15 for joints & wheels
+		- using a different timescaling in TrajGenerator
+		- check on Vd - should it be 1/dt
+	
+questions:
+- question about the pseudoinverse limits
+	- said if simulation runs well with the test trajectories from
+		milestone 1, the pseudoinverse is fine
+	- said 1E-1 is very high - punishes too many possible joint angles
+		1E-2 is the one I think I'll settle on
+- question about reasonable wheel motions
+	- free-sliding direction looks weird w/ the rollers on top, but
+		rollers on bottom are rotated by 90 deg
+- question about the error twist
+	- really wants to see all 6 components - can plot on different graphs
+
 		
+Re/ what the Prof has said in class:
+- solution to impose "joint limits" is to modify the Jacobian
+	Pseudoinverse calculation when we reach a joint limit: change the
+	Jacobian at that instant to "cancel out" motion about one joint.
+	show the model that you cannot increase that joint angle 
+	at the current instant to achieve the desired config
+- should be able to provide different initial and final
+	configs of cube to both CoppeliaSim and our motion planner -
+	and it should be able to geenrate a well-executed motion plan
+	for different ICs than the one provided
+- ReadMe file will contain info on any non-standard approaches we took
+	to solving problems; any behavior I observed that wasn't working the
+	way we thought it would. Won't get points off if we acknowledge there were 
+	errors
+- Look in depth at the NewTask aspect, and the full project integration
+	steps on the page
+- OH on Mon and Tues; don't expect to bring code, show it, and debug it
+	--> conceptual questions and informed debugging process are necessary
+	
+	
+	
+	
+
 		
+
 		
 Done:
+
+- ask about Xerr - should start nonzero right? mine ramps up for a certain reason - 
+	proportional to velocity of bot
+		- findings: I was telling the robot that the init posn was the same
+			as the expected init posn
+		- check that T0e with zero joint angles is same as M0e
+
+	- significant error from desired path
+		- resolved! with just Kp = 1 it's pretty good at tracking
+	- gripper does not open or close
+
+Code outline:
+once robot_config13_array and Xerr_array are populated:
+- save results to CSV files for each
+- plot the error over time:
+	- Xerr is a twist; can plot either	
+		- all 6 elements of Xerr over time, or
+		- magnitude of linear error and angular error (may be more readable)
+		
+- allow NextState() to take in a 13-vector; do value checking. if len() = 13,
+	do something; otherwise if len() != 12, raise exception
+	- don't do this b/c it'll make testing NextState() more arduous.
+		edit it in post
+- edit TrajGenerator to scale times of each trajectory segment to meet a desired
+	amount of time
+		- related: ensure dt fed to NextState(), dt fed to FBC(), and 
+			dt used to generate trajectories agree
+- find out why V_new is generating as a 6x6 matrix rather than a twist
+- test out trajectory.csv to make sure path makes sense
 - make a function to convert from trajectories in Array13 form back
 	to SE(3) matrices
 		- simple: np.reshape() on the 1st 9 elements, reshape to 3x1 for the

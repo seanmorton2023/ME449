@@ -1,0 +1,8 @@
+*.mp4
+*.avi
+*.png
+*.txt
+
+//for CoppeliaSim scenes
+*.ttm
+*.ttt

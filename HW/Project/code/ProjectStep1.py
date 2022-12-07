@@ -48,6 +48,15 @@ def NextState(robot_config12, robot_speeds9, dt, w_max):
 	if len(robot_config12) != 12 or len(robot_speeds9) != 9:
 		raise Exception(f"Lengths of arrays: {len(robot_config_12)} {len(robot_speeds9)}")
 
+	
+	#do checking if any of the wheel speeds are > w_max; filter w/ numpy function
+	#print("\nNextState debug:")
+	#print(f"w_max: {w_max}")
+	#print(f"robot speeds before clip: \n{robot_speeds9}")
+	#robot_speeds9 = np.clip(robot_speeds9, -w_max, w_max)
+	#print(f"\nrobot speeds after clip: \n{robot_speeds9}")
+	#time.sleep(0.5)
+
 	#world coords, joint angles theta, wheel angles phi
 	q_array      = robot_config12[0:3]
 	theta_array  = robot_config12[3:8]
@@ -67,9 +76,6 @@ def NextState(robot_config12, robot_speeds9, dt, w_max):
 		[ 1, 1,  1,  1],
 		[-1, 1, -1,  1]	
 	])
-
-	#do checking if any of the wheel speeds are > w_max; filter w/ numpy function
-	u_array = np.clip(u_array, -w_max, w_max)
 
 	#use EulerStep to calculate next arm joint angles, wheel angles,
 	thetalist = robot_config12[3:12]
@@ -117,7 +123,7 @@ def RunNextState(robot_config12, u, thetad, dt, w_max):
 	a "0" for "gripper open") representing the robot's configuration
 	after each integration step. 
 	'''
-	filename = '../csv/test_next_state.csv'
+	filename = '../csv/test/next_state.csv'
 	#clear out existing data in this file
 	f = open(filename, 'w') #clear out old data
 	f.close()

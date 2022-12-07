@@ -19,7 +19,7 @@ def test_csv():
     #CSV writing functions
     arr1 = np.array([0, 5, 6, 7])
     arr2 = np.array([9, 4, 5, 2])
-    csv_filename = '../csv/test_data.csv'
+    csv_filename = '../csv/test/data.csv'
     write_csv_line(csv_filename, arr1)
     write_csv_line(csv_filename, arr2)
 
@@ -71,7 +71,7 @@ def test_traj_creation():
 
     tf = time.time()
     print(f"Elapsed: {round(tf - t0, 1)} seconds")
-    write_csv_mat('../csv/test_traj.csv', joint_angles_v2)
+    write_csv_mat('../csv/test/traj.csv', joint_angles_v2)
 
 
 if __name__ == '__main__':

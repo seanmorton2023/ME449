@@ -29,7 +29,8 @@ def TrajectoryGenerator(Tse_i, Tsc_i, Tsc_f, Tce_grasp, Tce_standoff, k):
     '''
 
     #define params needed to make trajectories
-    method = 5
+    #method = 5
+    method = 3
 
     #define time each segment should take
     time_grasp = 0.63
