@@ -1,8 +1,9 @@
-#holds the M, G, and S/B parameters for the YouBot.
-#import code.core as mr
 import core as mr
 import numpy as np
 from scipy.spatial.transform import Rotation as R
+
+#This file holds important parameters of the YouBot and of the default path-planning scene
+#that were used in several steps of the project.
 
 Blist = np.array([
     [0,  0, 1,       0, 0.033, 0],
@@ -21,8 +22,6 @@ Tsc_f = np.array([
     [ 0, 0, 0,     1]
     ])
 
-
-#Tsb_0  = mr.RpToTrans(np.identity(3), [ 0.406, 0, 0.0963]).tolist()
 Tb0    = mr.RpToTrans(np.identity(3), [0.1662, 0, 0.0026]).tolist()
 M0e    = mr.RpToTrans(np.identity(3), [ 0.033, 0, 0.6546]).tolist()
 

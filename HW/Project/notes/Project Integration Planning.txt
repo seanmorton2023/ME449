@@ -1,8 +1,6 @@
 final project planning
 ME449
 
-
-
 ##############
 
 Full project integration
@@ -11,55 +9,30 @@ Full project integration
 
 
 To-Do:
-- note: changed Rcond = 1E-2 to 1E-1 in pinv() due to some jitteriness
-	/instability during tuning Pi
-- ask about whether wheel motions make sense; what could be causing jerking
-	of chassis forward
-- in addition to Jacobian Pseudoinverse limits:
-	- impose limits on joint velocities. they recommend this in the assignment
-	- see what reasonable limits are for both joints and wheels individually
-		based on velocities in file
-- add time arrays to plots using t_span and dt to make x axis more meaningful
 - in end: remove u_thetad arrays from simulation code
-- joint and wheel angle velocities:
-	- not complying with specified velocity limits
-	- real wheel speeds can go to up to +/- 10; jerky speeds can be magnitude of 
-		5, 10, or 25
-	- real joint speeds can go up to +/- 10; jerky speeds can be order of magnitude of 5, 
-		10, or 20
-	- impose limit of 10 just to make sure limits work; then refine method
-		of preventing jerk
 
 			
 - Notes:
-	- robot starts out doing lots of jerky motions - must be because
-		it starts out at a singularity
-			- check if changing the tol. on pinv() would help - experiment
-				with 1E-2 and 1E-3
-			- results: 1E-3 was too jerky; 1E-2 had some issues with not 
-				tracking as fast as the other arrays, but it was stable
-			- if other places use pinv() use it again there
-	- robot wheels seem to slide - check on conversion of joint motions
-		to wheel motions
-			- sliding seems less "bad" but still some motion orthogonal 
-				to rollers
-	- log file: shows the progress of your code, that you ran it, and that it
-		finished. shows the TAs approx. how long program should take
-			- for this course it's not too long; but it's good to have it
-				anyway
-	- inputs: program doesn't have to have inputs, like described in the 
-		file; can just have diff. matrices that you comment and uncomment
-		out
-	- error twist: can plot angular and linear components of error on one 
-		plot or separate plots.
-	 - make dt from simulation show up in plots
-	 - can try:
-		-limiting accel of joints from one timestep to another
-			- max reasonable accel appears to be 0.15 for joints & wheels
-		- using a different timescaling in TrajGenerator
-		- check on Vd - should it be 1/dt
-	- Kp only seems to be affecting the joint angles, not the wheels
-	- new method: calculate joint state using method in the book
+
+	- find steady state error from all 3 cases
+		- best:
+		- overshoot:
+		- newTask:
+	- have inputs available that can be commented/uncommented out as needed
+	- make sure not to include MR library in submission
+	- include required imports for running code
+	- put a note about commenting and uncommenting main() or plotting()
+	- need to have a near-circumferential motion from (1-1) in order to get it to work.
+		try things out tomorrow morn.
+	- cases where there are joint limits being violated:
+		block posns (0.5, 0.5, z) and (-0.5, 0.5, z), angles can be 45, 90, 135
+		block posns (1, 1, z) and (-1, 1, z)
+		block posns (1, 1, z) and (0, 2, z)
+
+	- extra credit is worth about 1.5% of total class grade, so may be worth it.
+		if I get the project 100% perfect then I'll get a 92 in this class - not
+			guaranteed that I won't get points off elsewhere tho. should try to implement.
+	- overshoot: Kp 3*eye and Ki 0.1 * eye was okay
 	
 questions:
 - question about the pseudoinverse limits
@@ -101,6 +74,54 @@ Re/ what the Prof has said in class:
 
 		
 Done:
+- joint and wheel angle velocities:
+	- not complying with specified velocity limits
+	- real wheel speeds can go to up to +/- 10; jerky speeds can be magnitude of 
+		5, 10, or 25
+	- real joint speeds can go up to +/- 10; jerky speeds can be order of magnitude of 5, 
+		10, or 20
+	- impose limit of 10 just to make sure limits work; then refine method
+		of preventing jerk
+
+- note: changed Rcond = 1E-2 to 1E-1 in pinv() due to some jitteriness
+	/instability during tuning Pi
+- ask about whether wheel motions make sense; what could be causing jerking
+	of chassis forward
+- in addition to Jacobian Pseudoinverse limits:
+	- impose limits on joint velocities. they recommend this in the assignment
+	- see what reasonable limits are for both joints and wheels individually
+		based on velocities in file
+- add time arrays to plots using t_span and dt to make x axis more meaningful
+	- robot starts out doing lots of jerky motions - must be because
+		it starts out at a singularity
+			- check if changing the tol. on pinv() would help - experiment
+				with 1E-2 and 1E-3
+			- results: 1E-3 was too jerky; 1E-2 had some issues with not 
+				tracking as fast as the other arrays, but it was stable
+			- if other places use pinv() use it again there
+	- robot wheels seem to slide - check on conversion of joint motions
+		to wheel motions
+			- sliding seems less "bad" but still some motion orthogonal 
+				to rollers
+	- log file: shows the progress of your code, that you ran it, and that it
+		finished. shows the TAs approx. how long program should take
+			- for this course it's not too long; but it's good to have it
+				anyway
+	- inputs: program doesn't have to have inputs, like described in the 
+		file; can just have diff. matrices that you comment and uncomment
+		out
+	- error twist: can plot angular and linear components of error on one 
+		plot or separate plots.
+	 - make dt from simulation show up in plots
+	 - can try:
+		-limiting accel of joints from one timestep to another
+			- max reasonable accel appears to be 0.15 for joints & wheels
+		- using a different timescaling in TrajGenerator
+		- check on Vd - should it be 1/dt
+	- Kp only seems to be affecting the joint angles, not the wheels
+	- new method: calculate joint state using method in the book
+
+
 
 - ask about Xerr - should start nonzero right? mine ramps up for a certain reason - 
 	proportional to velocity of bot

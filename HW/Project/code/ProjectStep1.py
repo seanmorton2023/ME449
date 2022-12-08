@@ -7,8 +7,6 @@ PROJECT STEP 1
 import core as mr
 from geometry import *
 from helpers import *
-import sys
-import time
 
 ######
 
@@ -42,20 +40,11 @@ def NextState(robot_config12, robot_speeds9, dt, w_max):
 	r = 0.0475   #m
 
 	#checking of data
-	robot_config12 = np.array(robot_config12)
-	robot_speeds9 = np.array(robot_speeds9)
+	robot_config12 = np.array(robot_config12).flatten()
+	robot_speeds9 = np.array(robot_speeds9).flatten()
 
 	if len(robot_config12) != 12 or len(robot_speeds9) != 9:
 		raise Exception(f"Lengths of arrays: {len(robot_config_12)} {len(robot_speeds9)}")
-
-	
-	#do checking if any of the wheel speeds are > w_max; filter w/ numpy function
-	#print("\nNextState debug:")
-	#print(f"w_max: {w_max}")
-	#print(f"robot speeds before clip: \n{robot_speeds9}")
-	#robot_speeds9 = np.clip(robot_speeds9, -w_max, w_max)
-	#print(f"\nrobot speeds after clip: \n{robot_speeds9}")
-	#time.sleep(0.5)
 
 	#world coords, joint angles theta, wheel angles phi
 	q_array      = robot_config12[0:3]
@@ -77,9 +66,9 @@ def NextState(robot_config12, robot_speeds9, dt, w_max):
 	])
 
 	#use EulerStep to calculate next arm joint angles, wheel angles,
-	thetalist = robot_config12[3:12]
-	dthetalist = np.append(thetad_array, u_array)
-	ddthetalist = np.zeros(max(robot_speeds9.shape)) #as long as the thetad array
+	thetalist = robot_config12[3:12].reshape((1,9))
+	dthetalist = np.append(thetad_array, u_array).reshape((1,9))
+	ddthetalist = np.zeros(max(robot_speeds9.shape)).reshape((1,9)) #as long as the thetad array
 	[thetanext, _] = mr.EulerStep(thetalist, dthetalist, ddthetalist, dt)
 
 	u_array = u_array.reshape((4, 1))
@@ -89,25 +78,9 @@ def NextState(robot_config12, robot_speeds9, dt, w_max):
 	Vb6 = Vb6.flatten()
 
 	#integrate the twist to get posn in world frame
-	#se3mat = mr.VecTose3(Vb6 * dt)
 	se3mat = mr.VecTose3(Vb6)
 
-	Tcurr_next = mr.MatrixExp6(se3mat)
-	#T_curr = ChassisSE3(phi, x, y)
-	#T_next = np.dot(T_curr, Tcurr_next)
-
-	##extract phi, x, y from new world frame coords
-	#R, p = mr.TransToRp(T_next)
-	#x_new, y_new = p[0:2]
-
-	#so3mat = mr.MatrixLog3(R)
-	#vec = mr.so3ToVec(so3mat)
-	#phi_new = max(vec)
-
-	##combine phi, x, y with new wheel + robot angles
-	#q_new = np.array([phi_new, x_new, y_new])
-
-	#new method: calculate q_next using method from book
+	#method for calculating q_next from textbook
 	wbz, vbx, vby = np.array(Vb).flatten().tolist()
 	if np.isclose(wbz, 0, atol=1E-4):
 		delta_qb = np.array([0, vbx, vby])
@@ -125,18 +98,9 @@ def NextState(robot_config12, robot_speeds9, dt, w_max):
 		[0, np.sin(phi),  np.cos(phi)]
 	])
 
-	#print("\nNextState debug:")
-	#print(f"wbz, vbx, vby: \n{wbz} {vbx} {vby}")
-	#print(f"q_transform: \n{q_transform}")
-	#print(f"delta_qb: \n{delta_qb}")
-
-
-
 	delta_q = np.dot(q_transform, delta_qb)
 	q_new = np.array(q_array).flatten() + np.array(delta_q).flatten()
-
 	robot_config12_new = np.append(q_new, thetanext.flatten())
-
 
 	return robot_config12_new
 
