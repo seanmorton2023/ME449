@@ -19,10 +19,11 @@ def main(dt):
     #Kp = np.identity(6)
     #Kp = 20*np.identity(6) #3 was a little jittery
     Kp = np.identity(6) #3 was a little jittery
+    #Kp = 4*np.identity(6) #3 was a little jittery
 
     #should consider different parameters for diff
     #entries in the array - diff. for w, x, y
-
+    #Kp = 0
     Ki = 0
     k = 1
     w_max = 10
@@ -31,8 +32,11 @@ def main(dt):
     Xerr = 0
 
     # - Define initial robot posn as 13-vector: robot_config13
-    init_base    = [np.pi/4, 0, 0.5]       #chassis phi, x, y
-    init_joints  = [0, 0, 0, 0, 0] # 5 robot joints
+    init_base    = [np.pi/4, 0, 0]       #chassis phi, x, y
+    #init_base    = [0, 0, 0]       #chassis phi, x, y
+
+    #init_joints  = [0, 0, 0, 0, 0] # 5 robot joints
+    init_joints  = [0, -np.pi/4, 0, 0, np.pi/2] # 5 robot joints
     init_wheels  = [0, 0, 0, 0]    # 4 wheel posns
     gripperState = 0               # open
     robot_config13 = init_base + init_joints + init_wheels + [gripperState]
@@ -45,9 +49,16 @@ def main(dt):
     #- generate reference trajectory from init. EE config to desired EE config
     #base offset Tb0 and home EE config M0e defined in geometry.py
     [phi, x, y] = expected_init_base
-    Tsb_0  = ChassisSE3(phi, x, y).tolist()
-    T0e = mr.FKinBody(M0e, Blist, expected_init_joints)
-    Tse_0 = np.dot(np.dot(Tsb_0, Tb0), T0e)
+    #Tsb_0  = ChassisSE3(phi, x, y).tolist()
+    #T0e = mr.FKinBody(M0e, Blist, expected_init_joints)
+    #Tse_0 = np.dot(np.dot(Tsb_0, Tb0), T0e)
+    Tse_0 = np.array([
+        [ 0, 0, 1,   0],
+        [ 0, 1, 0,   0],
+        [-1, 0, 0, 0.5],
+        [ 0, 0, 0,   1]
+    ])
+
     ref_traj = TrajectoryGenerator(Tse_0, Tsc_i, Tsc_f, Tce_grasp, Tce_standoff, k)
 
     #iterate through trajectories generated
@@ -57,6 +68,8 @@ def main(dt):
     Xerr_array = np.zeros((N-1, 6)) 
     u_thetad_array = np.zeros((N-1, 9))
     u_thetad = np.zeros(9)
+    u_thetad_clip = np.zeros(9)
+
 
     robot_config13_array = np.zeros((N,13))
     robot_config13_array[0] = robot_config13[:]
@@ -96,28 +109,37 @@ def main(dt):
         #limit max speeds and accelerations of wheel velocities. speed limits
         #correspond to motor limits, accel limits correspond to limits of dynamics
         #u_thetad = np.dot(np.linalg.pinv(Je, rcond=1e-2), V_next)
-        u_thetad_prev = u_thetad
-        u_thetad = np.dot(np.linalg.pinv(Je, rcond=5e-3), V_next)
+
+        u_thetad_prev = u_thetad_clip #to prevent large changes in accel
+        u_thetad = np.dot(np.linalg.pinv(Je, rcond=1e-2), V_next)
         u_thetad_clip = np.clip(u_thetad, -w_max, w_max)
-        u_thetad_clip = np.clip(u_thetad, -0.1 * abs(u_thetad_prev), 0.1*abs(u_thetad_prev))
+        #u_thetad_clip = np.clip(u_thetad, -0.1 - abs(u_thetad_prev), 0.1 + abs(u_thetad_prev))
         #u_thetad = np.dot(np.linalg.pinv(Je, rcond=1e-1), V_next)
 
 
         #print("Main() debug:")
-        #print(f'\nrobot_config13: \n{robot_config13}')
-        #print(f'\nrobot_config12: \n{robot_config13[:12]}')
-        #print(f'\nu_thetad: \n{u_thetad}')
-
+        ##print(f'\nrobot_config13: \n{robot_config13}')
+        ##print(f'\nrobot_config12: \n{robot_config13[:12]}')
+        #print(f'u_thetad: \n{u_thetad}')
+        #print(f'u_thetad_prev: \n{u_thetad_prev}')
+        #print(f'u_thetad_clip: \n{u_thetad_clip}')
+        #input()
 
         #calculate new phi, x, y, joint angles, wheel angles after following twist
         robot_config12 = NextState(robot_config13[:12], u_thetad, dt, w_max)
-        robot_config13[:12] = robot_config12
+        robot_config13[:12] = robot_config12[:]
         robot_config13[-1] = gripper_next
 
         #add to arrays and move to next iteration of loop
         robot_config13_array[i+1] = robot_config13
         Xerr_array[i,:] = Xerr
         u_thetad_array[i] = u_thetad_clip
+
+        #print("\nMain() debug:")
+        #print(f"robot_config12: \n{robot_config12}")
+        #print(f"robot_config13: \n{robot_config13}")
+
+
 
     ###
 
@@ -266,5 +288,5 @@ def PlotTrajectories(dt):
 
 if __name__ == '__main__':
     dt = 0.01
-    #main(dt)
+    main(dt)
     PlotTrajectories(dt)

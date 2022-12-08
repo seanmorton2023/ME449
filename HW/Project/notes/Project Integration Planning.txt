@@ -58,6 +58,8 @@ To-Do:
 			- max reasonable accel appears to be 0.15 for joints & wheels
 		- using a different timescaling in TrajGenerator
 		- check on Vd - should it be 1/dt
+	- Kp only seems to be affecting the joint angles, not the wheels
+	- new method: calculate joint state using method in the book
 	
 questions:
 - question about the pseudoinverse limits

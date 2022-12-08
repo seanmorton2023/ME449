@@ -65,9 +65,8 @@ def NextState(robot_config12, robot_speeds9, dt, w_max):
 	u_array      = robot_speeds9[0:4]
 	thetad_array = robot_speeds9[4:9]
 
-	phi = q_array[0]
-	x   = q_array[1]
-	y   = q_array[2]  
+	#old chassis position
+	phi, x, y = q_array
 
 	#mapping from wheel velocities to velocity in world coords
 	c = 1/(l+w) #constant for mapping from wheel speeds to omega in world coords
@@ -94,20 +93,50 @@ def NextState(robot_config12, robot_speeds9, dt, w_max):
 	se3mat = mr.VecTose3(Vb6)
 
 	Tcurr_next = mr.MatrixExp6(se3mat)
-	T_curr = ChassisSE3(phi, x, y)
-	T_next = np.dot(T_curr, Tcurr_next)
+	#T_curr = ChassisSE3(phi, x, y)
+	#T_next = np.dot(T_curr, Tcurr_next)
 
-	#extract phi, x, y from new world frame coords
-	R, p = mr.TransToRp(T_next)
-	x_new, y_new = p[0:2]
+	##extract phi, x, y from new world frame coords
+	#R, p = mr.TransToRp(T_next)
+	#x_new, y_new = p[0:2]
 
-	so3mat = mr.MatrixLog3(R)
-	vec = mr.so3ToVec(so3mat)
-	phi_new = max(vec)
+	#so3mat = mr.MatrixLog3(R)
+	#vec = mr.so3ToVec(so3mat)
+	#phi_new = max(vec)
 
-	#combine phi, x, y with new wheel + robot angles
-	q_new = np.array([phi_new, x_new, y_new])
+	##combine phi, x, y with new wheel + robot angles
+	#q_new = np.array([phi_new, x_new, y_new])
+
+	#new method: calculate q_next using method from book
+	wbz, vbx, vby = np.array(Vb).flatten().tolist()
+	if np.isclose(wbz, 0, atol=1E-4):
+		delta_qb = np.array([0, vbx, vby])
+	else:
+		delta_qb = np.array([
+			wbz,
+			(vbx * np.sin(wbz) + vby * (np.cos(wbz)-1) )/wbz,
+			(vby * np.sin(wbz) + vbx * (1-np.cos(wbz)) )/wbz
+		])
+
+	#get from body frame to the space frame
+	q_transform = np.array([
+		[1,           0,            0],
+		[0, np.cos(phi), -np.sin(phi)],
+		[0, np.sin(phi),  np.cos(phi)]
+	])
+
+	#print("\nNextState debug:")
+	#print(f"wbz, vbx, vby: \n{wbz} {vbx} {vby}")
+	#print(f"q_transform: \n{q_transform}")
+	#print(f"delta_qb: \n{delta_qb}")
+
+
+
+	delta_q = np.dot(q_transform, delta_qb)
+	q_new = np.array(q_array).flatten() + np.array(delta_q).flatten()
+
 	robot_config12_new = np.append(q_new, thetanext.flatten())
+
 
 	return robot_config12_new
 
