@@ -9,21 +9,8 @@ Full project integration
 
 
 To-Do:
-- in end: remove u_thetad arrays from simulation code
-
-			
-- Notes:
-
-	- find steady state error from all 3 cases
-		- best:
-		- overshoot:
-		- newTask:
-	- have inputs available that can be commented/uncommented out as needed
+	- convert AVI to MP4 in submission parts
 	- make sure not to include MR library in submission
-	- include required imports for running code
-	- put a note about commenting and uncommenting main() or plotting()
-	- need to have a near-circumferential motion from (1-1) in order to get it to work.
-		try things out tomorrow morn.
 	- cases where there are joint limits being violated:
 		block posns (0.5, 0.5, z) and (-0.5, 0.5, z), angles can be 45, 90, 135
 		block posns (1, 1, z) and (-1, 1, z)
@@ -33,7 +20,38 @@ To-Do:
 		if I get the project 100% perfect then I'll get a 92 in this class - not
 			guaranteed that I won't get points off elsewhere tho. should try to implement.
 	- overshoot: Kp 3*eye and Ki 0.1 * eye was okay
+	- try new methods of getting overshoot, to have better results for "overshoot".
+	- small thing: change where w_max is discussed from next_state to main()
+	- note that in some cases with the joint limits applied (1,1,0) to (-1,1,0) e.g.
+		the robot deviated from the path, and error twist grew
+		
 	
+		
+Re/ what the Prof has said in class:
+- solution to impose "joint limits" is to modify the Jacobian
+	Pseudoinverse calculation when we reach a joint limit: change the
+	Jacobian at that instant to "cancel out" motion about one joint.
+	show the model that you cannot increase that joint angle 
+	at the current instant to achieve the desired config
+
+	
+	
+	
+	
+
+		
+
+		
+Done:
+	- include required imports for running code
+	- put a note about commenting and uncommenting main() or plotting()
+- in end: remove u_thetad arrays from simulation code
+	- find steady state error from all 3 cases
+		- best:
+		- overshoot:
+		- newTask:
+	- have inputs available that can be commented/uncommented out as needed
+
 questions:
 - question about the pseudoinverse limits
 	- said if simulation runs well with the test trajectories from
@@ -46,13 +64,6 @@ questions:
 - question about the error twist
 	- really wants to see all 6 components - can plot on different graphs
 
-		
-Re/ what the Prof has said in class:
-- solution to impose "joint limits" is to modify the Jacobian
-	Pseudoinverse calculation when we reach a joint limit: change the
-	Jacobian at that instant to "cancel out" motion about one joint.
-	show the model that you cannot increase that joint angle 
-	at the current instant to achieve the desired config
 - should be able to provide different initial and final
 	configs of cube to both CoppeliaSim and our motion planner -
 	and it should be able to geenrate a well-executed motion plan
@@ -65,15 +76,8 @@ Re/ what the Prof has said in class:
 	steps on the page
 - OH on Mon and Tues; don't expect to bring code, show it, and debug it
 	--> conceptual questions and informed debugging process are necessary
-	
-	
-	
-	
-
-		
-
-		
-Done:
+	- need to have a near-circumferential motion from (1-1) in order to get it to work.
+		try things out tomorrow morn.
 - joint and wheel angle velocities:
 	- not complying with specified velocity limits
 	- real wheel speeds can go to up to +/- 10; jerky speeds can be magnitude of 

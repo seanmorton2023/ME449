@@ -2,6 +2,7 @@
 *.avi
 *.png
 *.txt
+*.zip
 
 //for CoppeliaSim scenes
 *.ttm

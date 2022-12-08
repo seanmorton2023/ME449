@@ -3,10 +3,14 @@
     "",
     "\\HW",
     "\\HW\\Project",
-    "\\HW\\Project\\code",
-    "\\HW\\Project\\csv",
-    "\\HW\\Project\\csv\\main"
+    "\\HW\\Project\\csv\\main",
+    "\\HW\\Project\\Morton_Sean_capstone",
+    "\\HW\\Project\\Morton_Sean_capstone\\code",
+    "\\HW\\Project\\Morton_Sean_capstone\\csv\\test",
+    "\\HW\\Project\\Morton_Sean_capstone\\results",
+    "\\HW\\Project\\Morton_Sean_capstone\\results\\overshoot",
+    "\\HW\\Project\\results"
   ],
-  "SelectedNode": "\\HW\\Project\\code\\ProjectStep2.py",
+  "SelectedNode": "\\HW\\Project\\Morton_Sean_capstone",
   "PreviewInSolutionExplorer": false
 }
